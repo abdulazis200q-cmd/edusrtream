@@ -1,21 +1,28 @@
-// Supabase — инициализация клиента (anon key для браузера)
+// Supabase — данные для инициализации клиента.
+// На GitHub Pages мы инициализируем клиент в `index.html` как window.supabaseClient (через ESM),
+// а тут делаем "ленивую" подхватку, чтобы порядок загрузки скриптов не ломал авторизацию.
 const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
-// !!! Важно: Supabase должен быть глобален window.supabase (как подключается в index.html через CDN)
-// Делаем инициализацию устойчивой на случай, если createClient недоступен.
-const supabaseCreateClient =
-    (typeof window !== 'undefined' &&
-        window.supabase &&
-        typeof window.supabase.createClient === 'function')
-        ? window.supabase.createClient
-        : null;
 
-const supabaseClient = supabaseCreateClient
-    ? supabaseCreateClient(supabaseUrl, supabaseAnonKey)
-    : null;
+let supabaseClient = null;
 
-if (!supabaseClient) {
-    console.warn('Supabase не загружен: window.supabase.createClient не найден');
+function getSupabaseClient() {
+    if (supabaseClient) return supabaseClient;
+    if (typeof window === 'undefined') return null;
+
+    // В идеале — подхватываем то, что создал index.html
+    if (window.supabaseClient) {
+        supabaseClient = window.supabaseClient;
+        return supabaseClient;
+    }
+
+    // На всякий случай: если вдруг где-то используется UMD
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        return supabaseClient;
+    }
+
+    return null;
 }
 
 // Данные студентов на основе предоставленной ведомости (локально для тестов, не в Supabase!)
@@ -116,6 +123,7 @@ function logout() {
         currentUser.lastSeen = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     }
     currentUser = null;
+    supabaseClient = getSupabaseClient();
     if (supabaseClient && supabaseClient.auth && supabaseClient.auth.signOut) supabaseClient.auth.signOut().catch(() => {});
     const authScreen = document.getElementById('auth-screen');
     const appContainer = document.getElementById('app-container');
@@ -181,6 +189,7 @@ async function login() {
         return;
     }
 
+    supabaseClient = getSupabaseClient();
     if (supabaseClient) {
         try {
             let loginEmail = null;
@@ -268,6 +277,7 @@ async function register() {
         return;
     }
 
+    supabaseClient = getSupabaseClient();
     if (!supabaseClient) {
         alert('❌ Supabase не загружен. Обновите страницу.');
         return;
@@ -462,6 +472,7 @@ async function addGrade() {
         return;
     }
 
+    supabaseClient = getSupabaseClient();
     if (!supabaseClient) {
         alert('❌ Supabase не загружен. Оценка не сохранена.');
         return;
@@ -513,6 +524,7 @@ async function loadGradesLog() {
     const body = document.getElementById('grades-log-body');
     if (!body) return;
 
+    supabaseClient = getSupabaseClient();
     if (!supabaseClient) {
         body.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Supabase не загружен</td></tr>';
         return;
@@ -554,6 +566,7 @@ async function loadGradesLog() {
 }
 
 async function deleteGrade(id) {
+    supabaseClient = getSupabaseClient();
     if (!supabaseClient) return;
     try {
         const { error } = await supabaseClient.from('grades').delete().eq('id', id);

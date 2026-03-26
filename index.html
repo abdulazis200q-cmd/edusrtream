@@ -6,8 +6,16 @@
     <title>EduStream — Система автоматизации</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="fasd.css">
-    <!-- UMD build: чтобы в браузере был window.supabase.createClient -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.52.1/dist/umd/supabase.min.js"></script>
+    <!-- ESM init: чтобы избежать конфликтов глобальной переменной `supabase` -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.52.1/+esm';
+
+        const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
+
+        // Делаем доступным для lll.js
+        window.supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    </script>
     
     
 </head>
