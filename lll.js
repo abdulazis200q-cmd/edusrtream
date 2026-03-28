@@ -25,30 +25,68 @@ function getSupabaseClient() {
     return null;
 }
 
-// Данные студентов на основе предоставленной ведомости (локально для тестов, не в Supabase!)
+// Учебный план (основная школа)
+const SCHOOL_SUBJECTS = [
+    'Алгебра', 'Геометрия', 'Русский язык', 'Литература', 'История', 'Обществознание',
+    'География', 'Биология', 'Физика', 'Химия', 'Английский язык', 'Информатика', 'Физическая культура'
+];
+
+const SUBJECT_TEACHER = {
+    'Алгебра': 'Иванова М.С.',
+    'Геометрия': 'Петров А.В.',
+    'Русский язык': 'Смирнова Е.П.',
+    'Литература': 'Смирнова Е.П.',
+    'История': 'Козлов Д.И.',
+    'Обществознание': 'Козлов Д.И.',
+    'География': 'Волкова Н.Т.',
+    'Биология': 'Морозова Л.К.',
+    'Физика': 'Соколов В.Р.',
+    'Химия': 'Лебедева О.Н.',
+    'Английский язык': 'Беннетт К.',
+    'Информатика': 'Андреев С.С.',
+    'Физическая культура': 'Рябов И.Г.'
+};
+
+function teacherForSubject(subject) {
+    return SUBJECT_TEACHER[subject] || 'Преподаватель';
+}
+
+function subjectProgressPercent(subject, userId) {
+    const s = String(subject || '') + String(userId || '');
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i);
+    return 55 + (Math.abs(h) % 36);
+}
+
+function pickRandomSubjects(count) {
+    const shuffled = [...SCHOOL_SUBJECTS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, Math.min(count, shuffled.length));
+}
+
+// Реестр учащихся (локальные учётные записи; новые — через регистрацию в Supabase)
 const students = [
-    { id: 1, name: "Адылбеков Адылбий", email: "student1@edustream.ru", username: "student1", password: "password123", group: "БИН-2024-1", role: "student", avgGrade: 4.0, absences: 2, courses: ["Python", "Базы данных"] },
-    { id: 2, name: "Алиев Амир", email: "student2@edustream.ru", username: "student2", password: "password123", group: "БИН-2024-1", role: "student", avgGrade: 3.5, absences: 1, courses: ["Python", "Веб-разработка"] },
-    { id: 3, name: "Алиев Шамиль", email: "student3@edustream.ru", username: "student3", password: "password123", group: "БИН-2024-1", role: "student", avgGrade: 3.2, absences: 0, courses: ["Базы данных"] },
-    { id: 4, name: "Алмазбеков Ислам", email: "student4@edustream.ru", username: "student4", password: "password123", group: "БИН-2024-1", role: "student", avgGrade: 3.8, absences: 3, courses: ["Python"] },
-    { id: 5, name: "Баги Абдурауф", email: "student5@edustream.ru", username: "student5", password: "password123", group: "БИН-2024-1", role: "student", avgGrade: 4.1, absences: 1, courses: ["Python", "Веб-разработка"] },
-    { id: 6, name: "Багиев Абдулазис", email: "student6@edustream.ru", username: "student6", password: "password123", group: "БИН-2024-1", role: "student", avgGrade: 4.8, absences: 2, courses: ["Базы данных", "Веб-разработка"] },
-    { id: 7, name: "Бакуменко Руслан", email: "student7@edustream.ru", username: "student7", password: "password123", group: "БИН-2024-1", role: "student", avgGrade: 4.3, absences: 0, courses: ["Python"] },
-    { id: 8, name: "Бешанбекова Жанетта", email: "student8@edustream.ru", username: "student8", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.5, absences: 4, courses: ["Базы данных"] },
-    { id: 9, name: "Кубезов Азис", email: "student9@edustream.ru", username: "student9", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.7, absences: 1, courses: ["Python", "Веб-разработка"] },
-    { id: 10, name: "Кушматов Дилержон", email: "student10@edustream.ru", username: "student10", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.2, absences: 2, courses: ["Веб-разработка"] },
-    { id: 11, name: "Кыдырмаев Искендер", email: "student11@edustream.ru", username: "student11", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.4, absences: 0, courses: ["Python", "Базы данных"] },
-    { id: 12, name: "Люшисан Абдулхалим", email: "student12@edustream.ru", username: "student12", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.0, absences: 5, courses: ["Веб-разработка"] },
-    { id: 13, name: "Маматов Абдуназим", email: "student13@edustream.ru", username: "student13", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.6, absences: 0, courses: ["Python", "Веб-разработка"] },
-    { id: 14, name: "Ниязкулов Джалиль", email: "student14@edustream.ru", username: "student14", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.1, absences: 3, courses: ["Python"] },
-    { id: 15, name: "Нуралиев Сыймыкбек", email: "student15@edustream.ru", username: "student15", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 3.9, absences: 1, courses: ["Базы данных"] },
-    { id: 16, name: "Нурлаев Сергей", email: "student16@edustream.ru", username: "student16", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.2, absences: 2, courses: ["Веб-разработка"] },
-    { id: 17, name: "Синяева Ульяна", email: "student17@edustream.ru", username: "student17", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.9, absences: 1, courses: ["Python", "Базы данных"] },
-    { id: 18, name: "Турсубекова Жамиля", email: "student18@edustream.ru", username: "student18", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.4, absences: 3, courses: ["Веб-разработка"] },
-    { id: 19, name: "Усенов Азизбек", email: "student19@edustream.ru", username: "student19", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 3.7, absences: 0, courses: ["Python"] },
-    { id: 20, name: "Усонбеков Адил-хан", email: "student20@edustream.ru", username: "student20", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.5, absences: 2, courses: ["Базы данных"] },
-    { id: 21, name: "Шодиев Махмуд", email: "student21@edustream.ru", username: "student21", password: "password123", group: "БИН-2024-2", role: "student", avgGrade: 4.8, absences: 1, courses: ["Python", "Веб-разработка"] },
-    { id: 22, name: "Петр Петров", email: "teacher1@edustream.ru", username: "teacher1", password: "password123", group: "N/A", role: "teacher", avgGrade: null, absences: null }
+    { id: 1, name: "Адылбеков Адылбий", email: "student1@edustream.ru", username: "student1", password: "password123", group: "9«А»", role: "student", avgGrade: 4.0, absences: 2, courses: ["Алгебра", "Русский язык", "История", "Биология"] },
+    { id: 2, name: "Алиев Амир", email: "student2@edustream.ru", username: "student2", password: "password123", group: "9«А»", role: "student", avgGrade: 3.5, absences: 1, courses: ["Геометрия", "Литература", "Английский язык", "Информатика"] },
+    { id: 3, name: "Алиев Шамиль", email: "student3@edustream.ru", username: "student3", password: "password123", group: "9«А»", role: "student", avgGrade: 3.2, absences: 0, courses: ["Алгебра", "Русский язык", "Физика", "Химия"] },
+    { id: 4, name: "Алмазбеков Ислам", email: "student4@edustream.ru", username: "student4", password: "password123", group: "9«А»", role: "student", avgGrade: 3.8, absences: 3, courses: ["Геометрия", "География", "Обществознание"] },
+    { id: 5, name: "Баги Абдурауф", email: "student5@edustream.ru", username: "student5", password: "password123", group: "9«А»", role: "student", avgGrade: 4.1, absences: 1, courses: ["Литература", "История", "Английский язык", "Физическая культура"] },
+    { id: 6, name: "Багиев Абдулазис", email: "student6@edustream.ru", username: "student6", password: "password123", group: "9«А»", role: "student", avgGrade: 4.8, absences: 2, courses: ["Алгебра", "Химия", "География", "Информатика"] },
+    { id: 7, name: "Бакуменко Руслан", email: "student7@edustream.ru", username: "student7", password: "password123", group: "9«А»", role: "student", avgGrade: 4.3, absences: 0, courses: ["Геометрия", "Русский язык", "Физика", "Обществознание"] },
+    { id: 8, name: "Бешанбекова Жанетта", email: "student8@edustream.ru", username: "student8", password: "password123", group: "9«Б»", role: "student", avgGrade: 4.5, absences: 4, courses: ["Алгебра", "Литература", "Биология", "История"] },
+    { id: 9, name: "Кубезов Азис", email: "student9@edustream.ru", username: "student9", password: "password123", group: "9«Б»", role: "student", avgGrade: 4.7, absences: 1, courses: ["Русский язык", "Геометрия", "Английский язык", "География"] },
+    { id: 10, name: "Кушматов Дилержон", email: "student10@edustream.ru", username: "student10", password: "password123", group: "9«Б»", role: "student", avgGrade: 4.2, absences: 2, courses: ["Физика", "Химия", "Информатика"] },
+    { id: 11, name: "Кыдырмаев Искендер", email: "student11@edustream.ru", username: "student11", password: "password123", group: "9«Б»", role: "student", avgGrade: 4.4, absences: 0, courses: ["Алгебра", "Обществознание", "Биология", "Физическая культура"] },
+    { id: 12, name: "Люшисан Абдулхалим", email: "student12@edustream.ru", username: "student12", password: "password123", group: "9«Б»", role: "student", avgGrade: 4.0, absences: 5, courses: ["Русский язык", "История", "Литература"] },
+    { id: 13, name: "Маматов Абдуназим", email: "student13@edustream.ru", username: "student13", password: "password123", group: "9«Б»", role: "student", avgGrade: 4.6, absences: 0, courses: ["Геометрия", "География", "Английский язык", "Физика"] },
+    { id: 14, name: "Ниязкулов Джалиль", email: "student14@edustream.ru", username: "student14", password: "password123", group: "10«А»", role: "student", avgGrade: 4.1, absences: 3, courses: ["Алгебра", "Химия", "Русский язык", "История"] },
+    { id: 15, name: "Нуралиев Сыймыкбек", email: "student15@edustream.ru", username: "student15", password: "password123", group: "10«А»", role: "student", avgGrade: 3.9, absences: 1, courses: ["Биология", "Литература", "Обществознание"] },
+    { id: 16, name: "Нурлаев Сергей", email: "student16@edustream.ru", username: "student16", password: "password123", group: "10«А»", role: "student", avgGrade: 4.2, absences: 2, courses: ["Геометрия", "Информатика", "Физическая культура"] },
+    { id: 17, name: "Синяева Ульяна", email: "student17@edustream.ru", username: "student17", password: "password123", group: "10«А»", role: "student", avgGrade: 4.9, absences: 1, courses: ["Алгебра", "Русский язык", "Английский язык", "География"] },
+    { id: 18, name: "Турсубекова Жамиля", email: "student18@edustream.ru", username: "student18", password: "password123", group: "10«А»", role: "student", avgGrade: 4.4, absences: 3, courses: ["Физика", "Химия", "История", "Литература"] },
+    { id: 19, name: "Усенов Азизбек", email: "student19@edustream.ru", username: "student19", password: "password123", group: "10«Б»", role: "student", avgGrade: 3.7, absences: 0, courses: ["Алгебра", "Биология", "Информатика"] },
+    { id: 20, name: "Усонбеков Адил-хан", email: "student20@edustream.ru", username: "student20", password: "password123", group: "10«Б»", role: "student", avgGrade: 4.5, absences: 2, courses: ["Геометрия", "Русский язык", "Обществознание"] },
+    { id: 21, name: "Шодиев Махмуд", email: "student21@edustream.ru", username: "student21", password: "password123", group: "10«Б»", role: "student", avgGrade: 4.8, absences: 1, courses: ["История", "Физика", "Английский язык", "Физическая культура"] },
+    { id: 22, name: "Сидорова Елена Николаевна", email: "teacher1@edustream.ru", username: "teacher1", password: "password123", group: "Зам. директора по УВР", role: "teacher", avgGrade: null, absences: null }
 ];
 
 let currentUser = null;
@@ -56,32 +94,96 @@ let gradesLog = [];
 let attendanceLog = [];
 let onlineStudents = new Set();
 
-// --- СИСТЕМА РЕАЛЬНОГО ВРЕМЕНИ (ПРОВЕРКА ОНЛАЙНА) ---
-setInterval(() => {
-    if (currentUser) {
-        // Твой аккаунт всегда онлайн в системе
-        onlineStudents.add(currentUser.id);
+function studentIsOnline(studentId) {
+    return onlineStudents.has(studentId) || onlineStudents.has(String(studentId));
+}
 
-        // Имитация случайных заходов других студентов
-        students.forEach(s => {
-            if (s.id !== currentUser.id && s.role === 'student') {
-                if (Math.random() > 0.98) { 
-                    if (onlineStudents.has(s.id)) {
-                        onlineStudents.delete(s.id);
-                        s.lastSeen = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    } else {
-                        onlineStudents.add(s.id);
-                        s.lastSeen = "Сейчас";
-                    }
-                }
-            }
+// --- РЕАЛЬНОЕ ВРЕМЯ: ONLINE/ОФФЛАЙН ЧЕРЕЗ SUPABASE PRESENCE ---
+let presenceChannel = null;
+
+function updateOnlineFromPresence(state) {
+    // state: { [presenceKey]: [{ user_id, role, ... }] }
+    const next = new Set();
+    Object.values(state || {}).forEach((metas) => {
+        (metas || []).forEach((m) => {
+            if (m && m.user_id !== undefined && m.user_id !== null) next.add(m.user_id);
         });
+    });
+    onlineStudents = next;
 
-        if (currentUser.role === 'teacher') {
-            renderStudentsTable();
+    // Обновим lastSeen у тех, кто оффлайн
+    students.forEach((s) => {
+        if (!onlineStudents.has(s.id) && !onlineStudents.has(String(s.id))) {
+            if (!s.lastSeen || s.lastSeen === 'Сейчас') {
+                s.lastSeen = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        } else {
+            s.lastSeen = 'Сейчас';
         }
+    });
+
+    if (currentUser?.role === 'teacher') {
+        renderStudentsTable();
     }
-}, 3000);
+}
+
+async function startPresence(user) {
+    const sb = getSupabaseClient();
+    if (!sb) return;
+
+    // Чтобы одинаково работало для локальных числовых id и supabase uuid:
+    const userId = user?.id;
+
+    // Убираем старый канал, если был
+    try {
+        if (presenceChannel) {
+            await presenceChannel.untrack().catch(() => {});
+            await sb.removeChannel(presenceChannel).catch(() => {});
+        }
+    } catch (_) {}
+
+    // Один общий канал на приложение
+    presenceChannel = sb.channel('edustream-online', {
+        config: { presence: { key: String(userId) } }
+    });
+
+    presenceChannel.on('presence', { event: 'sync' }, () => {
+        updateOnlineFromPresence(presenceChannel.presenceState());
+    });
+
+    presenceChannel.on('presence', { event: 'join' }, () => {
+        updateOnlineFromPresence(presenceChannel.presenceState());
+    });
+
+    presenceChannel.on('presence', { event: 'leave' }, () => {
+        updateOnlineFromPresence(presenceChannel.presenceState());
+    });
+
+    await presenceChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+            await presenceChannel.track({
+                user_id: userId,
+                role: user?.role || 'student',
+                name: user?.name || '',
+                at: new Date().toISOString()
+            });
+            updateOnlineFromPresence(presenceChannel.presenceState());
+        }
+    });
+}
+
+async function stopPresence() {
+    const sb = getSupabaseClient();
+    if (!sb || !presenceChannel) return;
+    try {
+        await presenceChannel.untrack().catch(() => {});
+        await sb.removeChannel(presenceChannel).catch(() => {});
+    } catch (_) {
+        // ignore
+    } finally {
+        presenceChannel = null;
+    }
+}
 
 // --- ОСНОВНЫЕ ФУНКЦИИ ---
 
@@ -89,6 +191,8 @@ function loginUser(user) {
     currentUser = user;
     onlineStudents.add(user.id);
     user.lastSeen = "Сейчас";
+    // Стартуем реальный online presence (между разными устройствами/вкладками)
+    startPresence(user).catch((e) => console.error('Presence error:', e));
 
     const authScreen = document.getElementById('auth-screen');
     const appContainer = document.getElementById('app-container');
@@ -97,7 +201,7 @@ function loginUser(user) {
 
     const userName = document.getElementById('user-name');
     const userAvatar = document.getElementById('user-avatar');
-    if (userName) userName.innerText = `${user.name} (${user.role === 'student' ? 'Студент' : 'Преподаватель'})`;
+    if (userName) userName.innerText = `${user.name} · ${user.role === 'student' ? 'Учащийся' : 'Преподаватель'}`;
     if (userAvatar) userAvatar.innerText = (user.name || '').charAt(0);
 
     const studentNav = document.getElementById('student-nav');
@@ -122,6 +226,7 @@ function logout() {
         onlineStudents.delete(currentUser.id);
         currentUser.lastSeen = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     }
+    stopPresence().catch(() => {});
     currentUser = null;
     supabaseClient = getSupabaseClient();
     if (supabaseClient && supabaseClient.auth && supabaseClient.auth.signOut) supabaseClient.auth.signOut().catch(() => {});
@@ -144,7 +249,7 @@ function renderStudentsTable() {
     if (!body) return;
 
     body.innerHTML = students.filter(s => s.role === 'student').map(student => {
-        const isOnline = onlineStudents.has(student.id);
+        const isOnline = studentIsOnline(student.id);
         return `
             <tr>
                 <td><strong>${student.name}</strong></td>
@@ -153,7 +258,7 @@ function renderStudentsTable() {
                 <td><span style="background: ${student.absences > 3 ? '#ff6b6b' : '#51cf66'}; color: white; padding: 4px 8px; border-radius: 6px;">${student.absences}</span></td>
                 <td>
                     <span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">
-                        ${isOnline ? '🟢 Онлайн' : '🔴 Офлайн'}
+                        ${isOnline ? 'В сети' : 'Не в сети'}
                     </span>
                 </td>
                 <td style="font-size: 12px; color: #888;">
@@ -168,7 +273,7 @@ async function login() {
     const emailOrUsernameEl = document.getElementById('login-email');
     const passwordEl = document.getElementById('login-password');
     if (!emailOrUsernameEl || !passwordEl) {
-        alert('⚠️ Форма входа не найдена!');
+        alert('Форма входа недоступна. Обновите страницу.');
         return;
     }
     const emailOrUsername = emailOrUsernameEl.value.trim();
@@ -176,7 +281,7 @@ async function login() {
     let supabaseLastError = null;
 
     if (!emailOrUsername || !password) {
-        alert('⚠️ Заполните все поля!');
+        alert('Заполните все поля.');
         return;
     }
 
@@ -222,7 +327,7 @@ async function login() {
     }
 
     const reason = supabaseLastError ? ` Причина: ${supabaseLastError}` : '';
-    alert('❌ Неверный email/username или пароль!' + reason);
+    alert('Неверный логин или пароль.' + reason);
 }
 
 function profileToUser(p) {
@@ -233,11 +338,11 @@ function profileToUser(p) {
         name: p.full_name || p.username,
         email: p.email,
         username: p.username,
-        group: p.group || 'БИН-2024-1',
+        group: p.group || '9«А»',
         role: p.role || 'student',
         avgGrade: p.avg_grade !== undefined ? p.avg_grade : 4.0,
         absences: p.absences !== undefined && p.absences !== null ? p.absences : 0,
-        courses: Array.isArray(p.courses) ? p.courses : ['Python', 'Веб-разработка']
+        courses: Array.isArray(p.courses) ? p.courses : pickRandomSubjects(5)
     };
     if (!students.find(s => s.id === user.id)) students.push(user);
     return user;
@@ -252,7 +357,7 @@ async function register() {
 
     // Защитим от отсутствия нужных элементов
     if (!nameEl || !emailEl || !usernameEl || !passwordEl || !passwordConfirmEl) {
-        alert('⚠️ Форма регистрации не найдена!');
+        alert('Форма регистрации недоступна.');
         return;
     }
 
@@ -263,23 +368,23 @@ async function register() {
     const passwordConfirm = passwordConfirmEl.value;
 
     if (!name || !email || !username || !password || !passwordConfirm) {
-        alert('⚠️ Заполните все поля!');
+        alert('Заполните все поля.');
         return;
     }
 
     if (password !== passwordConfirm) {
-        alert('⚠️ Пароли не совпадают!');
+        alert('Пароли не совпадают.');
         return;
     }
 
     if (students.find(s => s.email === email || s.username === username)) {
-        alert('❌ Пользователь с таким email или username уже существует!');
+        alert('Учётная запись с таким email или логином уже есть.');
         return;
     }
 
     supabaseClient = getSupabaseClient();
     if (!supabaseClient) {
-        alert('❌ Supabase не загружен. Обновите страницу.');
+        alert('Сервис авторизации не загружен. Обновите страницу.');
         return;
     }
     try {
@@ -291,17 +396,19 @@ async function register() {
         });
 
         if (authError) {
-            alert('❌ Ошибка регистрации: ' + authError.message);
+            alert('Ошибка регистрации: ' + authError.message);
             return;
         }
 
         if (!authData || !authData.user) {
-            alert('❌ Не удалось создать пользователя.');
+            alert('Не удалось создать учётную запись.');
             return;
         }
 
         // 2. Создаём запись в таблице profiles
-        const group = "БИН-2024-" + (Math.floor(Math.random() * 3) + 1);
+        const schoolGroups = ['9«А»', '9«Б»', '10«А»', '10«Б»'];
+        const group = schoolGroups[Math.floor(Math.random() * schoolGroups.length)];
+        const regCourses = pickRandomSubjects(5);
         const { error: profileError } = await supabaseClient
             .from('profiles')
             .insert([{
@@ -313,12 +420,12 @@ async function register() {
                 role: 'student',
                 avg_grade: 4.5,
                 absences: 0,
-                courses: ['Python', 'Веб-разработка']
+                courses: regCourses
             }]);
 
         if (profileError) {
             console.error('Ошибка создания профиля:', profileError);
-            alert('⚠️ Аккаунт создан, но профиль не сохранён. Причина: ' + (profileError.message || profileError));
+            alert('Запись в журнале создана частично. Профиль не сохранён. Причина: ' + (profileError.message || profileError));
         }
 
         // 3. Добавляем в локальный массив для совместимости
@@ -332,7 +439,7 @@ async function register() {
             role: "student",
             avgGrade: 4.5,
             absences: 0,
-            courses: ["Python", "Веб-разработка"]
+            courses: regCourses
         };
         students.push(newUser);
 
@@ -340,11 +447,11 @@ async function register() {
             authData &&
             authData.user &&
             authData.user.email_confirmed_at === null;
-        alert('✅ Аккаунт создан! Теперь войдите.' + (needEmailConfirm ? ' Возможно нужно подтвердить email.' : ''));
+        alert('Регистрация завершена. Войдите с указанными данными.' + (needEmailConfirm ? ' Проверьте почту: может потребоваться подтверждение.' : ''));
         switchAuthForm();
     } catch (err) {
         console.error(err);
-        alert('❌ Ошибка: ' + (err.message || 'Не удалось зарегистрироваться'));
+        alert('Ошибка: ' + (err.message || 'Регистрация не выполнена'));
     }
 }
 
@@ -367,26 +474,33 @@ function loadStudentData() {
     if (coursesList) coursesList.innerHTML = courses.map(course => `
         <div class="course-item">
             <h4>${course}</h4>
-            <p>Преподаватель: д.т.н. Петров А.А.</p>
-            <progress value="${Math.random() * 100}" max="100"></progress>
+            <p>Преподаватель: ${teacherForSubject(course)}</p>
+            <progress value="${subjectProgressPercent(course, user.id)}" max="100"></progress>
         </div>
     `).join('');
 
     const gradesBody = document.getElementById('grades-body');
-    if (gradesBody) gradesBody.innerHTML = `
+    if (gradesBody) {
+        const subs = (courses.length ? courses.slice(0, 4) : SCHOOL_SUBJECTS.slice(0, 4));
+        const marks = [5, 4, 5, 4];
+        gradesBody.innerHTML = subs.map((subj, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (i + 1) * 5);
+            return `
         <tr>
-            <td>${courses[0] || 'Python'}</td>
-            <td>${new Date().toLocaleDateString('ru-RU')}</td>
-            <td><strong>5</strong></td>
-        </tr>
-    `;
+            <td>${subj}</td>
+            <td>${d.toLocaleDateString('ru-RU')}</td>
+            <td><strong>${marks[i % marks.length]}</strong></td>
+        </tr>`;
+        }).join('');
+    }
 }
 
 function loadStudentsList() {
     const body = document.getElementById('students-body');
     if (!body) return;
     body.innerHTML = students.filter(s => s.role === 'student').map(student => {
-        const isOnline = onlineStudents.has(student.id);
+        const isOnline = studentIsOnline(student.id);
         return `
             <tr>
                 <td><strong>${student.name}</strong></td>
@@ -394,8 +508,8 @@ function loadStudentsList() {
                 <td><strong style="color: #667eea;">${student.avgGrade}</strong>/5</td>
                 <td><span style="background: ${student.absences > 2 ? '#ff6b6b' : '#51cf66'}; color: white; padding: 4px 8px; border-radius: 6px;">${student.absences}</span></td>
                 <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">
-                    ${isOnline ? '🟢 Онлайн' : '🔴 Офлайн'}</span></td>
-                <td style="font-size: 12px; color: #888;">${isOnline ? 'Сейчас' : 'Час назад'}</td>
+                    ${isOnline ? 'В сети' : 'Не в сети'}</span></td>
+                <td style="font-size: 12px; color: #888;">${isOnline ? 'Сейчас' : (student.lastSeen || '—')}</td>
             </tr>
     
         `;
@@ -418,7 +532,7 @@ function updateStudentsList() {
         const body = document.getElementById('students-body');
         if (!body) return;
         body.innerHTML = students.filter(s => s.role === 'student').map(student => {
-            const isOnline = onlineStudents.has(student.id);
+            const isOnline = studentIsOnline(student.id);
             return `
                 <tr>
                     <td><strong>${student.name}</strong></td>
@@ -426,8 +540,8 @@ function updateStudentsList() {
                     <td><strong style="color: #667eea;">${student.avgGrade}</strong>/5</td>
                     <td><span style="background: ${student.absences > 2 ? '#ff6b6b' : '#51cf66'}; color: white; padding: 4px 8px; border-radius: 6px;">${student.absences}</span></td>
                     <td><span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">
-                        ${isOnline ? '🟢 Онлайн' : '🔴 Офлайн'}</span></td>
-                    <td style="font-size: 12px; color: #888;">${isOnline ? 'Сейчас' : 'Час назад'}</td>
+                        ${isOnline ? 'В сети' : 'Не в сети'}</span></td>
+                    <td style="font-size: 12px; color: #888;">${isOnline ? 'Сейчас' : (student.lastSeen || '—')}</td>
                 </tr>
             `;
         }).join('');
@@ -444,13 +558,13 @@ function showSection(sectionId, evt) {
     if (activeLink) activeLink.classList.add('active');
 
     const titles = {
-        'dashboard': 'Панель управления',
-        'courses': 'Мои курсы',
+        'dashboard': 'Главная',
+        'courses': 'Мои предметы',
         'grades': 'Успеваемость',
-        'settings': 'Настройки профиля',
-        'students': 'Список студентов',
-        'grades-manage': 'Управление оценками',
-        'attendance': 'Управление пропусками'
+        'settings': 'Личные данные',
+        'students': 'Классы и учащиеся',
+        'grades-manage': 'Журнал оценок',
+        'attendance': 'Учёт пропусков'
     };
     const titleEl = document.getElementById('section-title');
     if (titleEl && titles[sectionId]) titleEl.innerText = titles[sectionId];
@@ -468,13 +582,13 @@ async function addGrade() {
     const date = dateEl?.value;
 
     if (!studentName || studentName === 'Выберите...' || !subject || isNaN(grade) || !date) {
-        alert('⚠️ Заполните все поля корректно!');
+        alert('Заполните все поля корректно.');
         return;
     }
 
     supabaseClient = getSupabaseClient();
     if (!supabaseClient) {
-        alert('❌ Supabase не загружен. Оценка не сохранена.');
+        alert('Сервис журнала недоступен. Оценка не сохранена.');
         return;
     }
 
@@ -514,10 +628,10 @@ async function addGrade() {
 
         await loadGradesLog();
         loadStudentsList();
-        alert(`✅ Оценка ${grade} для ${studentName} сохранена в Supabase.`);
+        alert(`Оценка ${grade} по «${subject}» для ${studentName} внесена в журнал.`);
     } catch (err) {
         console.error('Ошибка сохранения оценки:', err);
-        alert('❌ Не удалось сохранить оценку: ' + (err.message || 'Ошибка Supabase'));
+        alert('Не удалось сохранить оценку: ' + (err.message || 'Сервис недоступен'));
     }
 }
 async function loadGradesLog() {
@@ -526,7 +640,7 @@ async function loadGradesLog() {
 
     supabaseClient = getSupabaseClient();
     if (!supabaseClient) {
-        body.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Supabase не загружен</td></tr>';
+        body.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Журнал временно недоступен</td></tr>';
         return;
     }
 
@@ -547,7 +661,7 @@ async function loadGradesLog() {
         }));
 
         if (gradesLog.length === 0) {
-            body.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Оценки еще не добавлены</td></tr>';
+            body.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Записей в журнале пока нет</td></tr>';
             return;
         }
         body.innerHTML = gradesLog.map((g) => `
@@ -575,7 +689,7 @@ async function deleteGrade(id) {
         await loadGradesLog();
     } catch (err) {
         console.error('Ошибка удаления оценки:', err);
-        alert('❌ Не удалось удалить оценку.');
+        alert('Не удалось удалить запись.');
     }
 }
 
@@ -601,9 +715,9 @@ function addAbsence() {
         if (dateEl) dateEl.value = '';
         if (reasonEl) reasonEl.value = '';
         loadAttendanceLog();
-        alert('✅ Пропуск успешно добавлен!');
+        alert('Запись о пропуске добавлена.');
     } else {
-        alert('⚠️ Заполните все поля!');
+        alert('Заполните все поля.');
     }
 }
 
@@ -611,7 +725,7 @@ function loadAttendanceLog() {
     const body = document.getElementById('attendance-log-body');
     if (!body) return;
     if (!attendanceLog.length) {
-        body.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">Пропуски еще не добавлены</td></tr>';
+        body.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">Записей о пропусках нет</td></tr>';
         return;
     }
     body.innerHTML = attendanceLog.map((a, i) => `
@@ -633,5 +747,5 @@ function saveSettings(event) {
     if (sn) currentUser.name = sn.value;
     if (se) currentUser.email = se.value;
     if (sg) currentUser.group = sg.value;
-    alert('✅ Настройки сохранены!');
+    alert('Изменения сохранены.');
 }

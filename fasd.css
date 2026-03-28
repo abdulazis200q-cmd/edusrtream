@@ -463,6 +463,13 @@
             font-weight: 700;
         }
 
+        .section-lead {
+            font-size: 14px;
+            color: #666;
+            margin: -18px 0 20px;
+            line-height: 1.45;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
