@@ -1,3 +1,12 @@
+function getSupabaseClient() {
+    if (supabase) return supabase;
+    
+    // Если мы в другом браузере, нам нужно убедиться, что window.supabaseClient уже создан модулем
+    if (window.supabaseClient) {
+        supabase = window.supabaseClient;
+    } 
+    return supabase;
+}
 const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
 

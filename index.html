@@ -13,9 +13,9 @@
         const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
         const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
     
-        // Создаем клиент и сохраняем его глобально БЕЗОПАСНО
+        // Создаем клиент один раз и кладем в "глобальное окно"
         window.supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-        console.log("Supabase initialized in index.html");
+        console.log("Supabase initialized!");
     </script>
     
     <script src="lll.js" defer></script>
