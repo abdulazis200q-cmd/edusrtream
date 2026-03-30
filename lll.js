@@ -1,96 +1,163 @@
-// Данные для подключения (твои ключи)
+// --- КОНФИГУРАЦИЯ ---
 const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
 
-let supabase = null;
+let supabaseClient = null; // Переименовал, чтобы не было конфликтов
+let currentUser = null;
+let grades = [];
+let attendanceLog = [];
 
-// 1. Умная функция получения клиента (чтобы не было ошибок в разных браузерах)
+// Получение клиента
 function getSupabaseClient() {
-    if (supabase) return supabase;
+    if (supabaseClient) return supabaseClient;
     
-    if (window.supabaseClient) {
-        supabase = window.supabaseClient;
-    } else if (window.supabase && typeof window.supabase.createClient === 'function') {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    // Проверяем, загружена ли библиотека Supabase через CDN или из окна
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    } else if (window.supabaseClient) {
+        supabaseClient = window.supabaseClient;
     }
-    return supabase;
+    
+    if (!supabaseClient) {
+        console.error("Библиотека Supabase не найдена! Проверьте подключение в index.html");
+    }
+    return supabaseClient;
 }
 
-// 2. Функция переключения панелей с СОХРАНЕНИЕМ (чтобы не сбрасывалось при F5)
-function showPanel(panelId) {
-    const sections = document.querySelectorAll('section, .auth-container, .app-container');
-    sections.forEach(s => s.classList.add('hidden'));
+// --- АВТОРИЗАЦИЯ ---
+async function register() {
+    const client = getSupabaseClient();
+    if (!client) return;
 
-    const appContainer = document.querySelector('.app-container');
-    if (appContainer) appContainer.classList.remove('hidden');
+    const email = document.getElementById('reg-email')?.value;
+    const password = document.getElementById('reg-password')?.value;
 
-    const target = document.getElementById(panelId);
-    if (target) {
-        target.classList.remove('hidden');
+    if (!email || !password) return alert("Заполните все поля!");
+
+    const { data, error } = await client.auth.signUp({ email, password });
+    if (error) alert("Ошибка регистрации: " + error.message);
+    else alert("Регистрация успешна! Теперь вы можете войти.");
+}
+
+async function login() {
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    const email = document.getElementById('auth-email')?.value;
+    const password = document.getElementById('auth-password')?.value;
+
+    if (!email || !password) return alert("Введите почту и пароль!");
+
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (error) {
+        alert("Ошибка входа: " + error.message);
+    } else {
+        currentUser = { email: data.user.email, id: data.user.id };
+        showPanel('dashboard');
+        updateUI();
     }
+}
 
-    // Сохраняем в память браузера текущую вкладку
+async function logout() {
+    const client = getSupabaseClient();
+    if (client) await client.auth.signOut();
+    currentUser = null;
+    localStorage.removeItem('currentPanel');
+    showAuth('login');
+}
+
+// --- НАВИГАЦИЯ ---
+function showPanel(panelId) {
+    // Скрываем всё
+    document.querySelectorAll('section, .auth-container, .app-container').forEach(s => s.classList.add('hidden'));
+    
+    // Показываем оболочку приложения
+    const appWrap = document.querySelector('.app-container');
+    if (appWrap) appWrap.classList.remove('hidden');
+    
+    // Показываем конкретную панель
+    const target = document.getElementById(panelId);
+    if (target) target.classList.remove('hidden');
+
     localStorage.setItem('currentPanel', panelId);
 }
 
-// 3. Функция для форм входа/регистрации
 function showAuth(type) {
-    const appContainer = document.querySelector('.app-container');
-    if (appContainer) appContainer.classList.add('hidden');
-
-    const authContainer = document.querySelector('.auth-container');
-    if (authContainer) authContainer.classList.remove('hidden');
+    document.querySelectorAll('.app-container, section').forEach(s => s.classList.add('hidden'));
+    const authWrap = document.querySelector('.auth-container');
+    if (authWrap) authWrap.classList.remove('hidden');
 
     document.getElementById('login-form')?.classList.toggle('hidden', type !== 'login');
     document.getElementById('register-form')?.classList.toggle('hidden', type !== 'register');
 }
 
-// 4. АВТО-ЗАГРУЗКА: проверка сессии и восстановление вкладки при старте
-document.addEventListener('DOMContentLoaded', async () => {
-    const client = getSupabaseClient();
-    const lastPanel = localStorage.getItem('currentPanel');
+// --- ФУНКЦИИ ДАННЫХ ---
+function addGrade() {
+    const student = document.getElementById('grade-student')?.value;
+    const subject = document.getElementById('grade-subject')?.value;
+    const score = document.getElementById('grade-value')?.value;
 
-    if (client) {
-        const { data: { session } } = await client.auth.getSession();
-        if (session) {
-            // Если залогинен — открываем старую панель или Dashboard
-            const toOpen = (lastPanel && !lastPanel.includes('form')) ? lastPanel : 'dashboard';
-            showPanel(toOpen);
-            if (typeof updateUI === 'function') updateUI();
-        } else {
-            // Если нет — на вход
-            showAuth('login');
-        }
-    }
-});
-
-// ПРИМЕР ИСПРАВЛЕНИЯ ВАШИХ ФУНКЦИЙ:
-async function login() {
-    // ВАЖНО: Обновляем ссылку на клиент прямо перед использованием!
-    const client = getSupabaseClient(); 
-    
-    if (!client) {
-        alert("Ошибка: Связь с Supabase еще не установлена. Попробуйте через секунду.");
-        return;
-    }
-
-    const email = document.getElementById('auth-email')?.value;
-    const password = document.getElementById('auth-password')?.value;
-
-    // Используем client вместо переменной supabase
-    const { data, error } = await client.auth.signInWithPassword({
-        email: email,
-        password: password,
-    });
-
-    if (error) {
-        alert("Ошибка: " + error.message);
+    if (student && student !== 'Выберите...' && subject && score) {
+        grades.push({ student, subject, score, date: new Date().toLocaleDateString() });
+        updateUI();
+        alert("Оценка добавлена!");
     } else {
-        console.log("Успешный вход:", data);
-        // ваш код перехода
+        alert("Заполните все поля корректно!");
     }
 }
 
+function addAbsence() {
+    const student = document.getElementById('absence-student')?.value;
+    const date = document.getElementById('absence-date')?.value;
+    const reason = document.getElementById('absence-reason')?.value;
+
+    if (student && student !== 'Выберите...' && date && reason) {
+        attendanceLog.push({ student, date, reason });
+        updateUI();
+        alert("Пропуск зафиксирован!");
+    } else {
+        alert("Заполните данные о пропуске!");
+    }
+}
+
+function updateUI() {
+    const gBody = document.getElementById('grades-table-body');
+    if (gBody) {
+        gBody.innerHTML = grades.length ? grades.map(g => 
+            `<tr><td>${g.student}</td><td>${g.subject}</td><td><span class="grade-badge">${g.score}</span></td><td>${g.date}</td></tr>`
+        ).join('') : '<tr><td colspan="4" style="text-align:center">Нет данных</td></tr>';
+    }
+
+    const aBody = document.getElementById('attendance-log-body');
+    if (aBody) {
+        aBody.innerHTML = attendanceLog.length ? attendanceLog.map(a => 
+            `<tr><td>${a.student}</td><td>${a.date}</td><td>${a.reason}</td></tr>`
+        ).join('') : '<tr><td colspan="3" style="text-align:center">Нет данных</td></tr>';
+    }
+}
+
+// --- СТАРТ ПРИ ЗАГРУЗКЕ ---
+document.addEventListener('DOMContentLoaded', async () => {
+    const client = getSupabaseClient();
+    if (!client) return;
+
+    try {
+        const { data: { session } } = await client.auth.getSession();
+        const lastPanel = localStorage.getItem('currentPanel');
+
+        if (session) {
+            currentUser = { email: session.user.email, id: session.user.id };
+            const panelToOpen = (lastPanel && !lastPanel.includes('form')) ? lastPanel : 'dashboard';
+            showPanel(panelToOpen);
+            updateUI();
+        } else {
+            showAuth('login');
+        }
+    } catch (e) {
+        console.error("Ошибка при проверке сессии:", e);
+        showAuth('login');
+    }
+});
 // Учебный план (основная школа)
 const SCHOOL_SUBJECTS = [
     'Алгебра', 'Геометрия', 'Русский язык', 'Литература', 'История', 'Обществознание',
@@ -155,10 +222,7 @@ const students = [
     { id: 22, name: "Сидорова Елена Николаевна", email: "teacher1@edustream.ru", username: "teacher1", password: "password123", group: "Зам. директора по УВР", role: "teacher", avgGrade: null, absences: null }
 ];
 
-let currentUser = null;
-let gradesLog = [];
-let attendanceLog = [];
-let onlineStudents = new Set();
+
 
 function studentIsOnline(studentId) {
     return onlineStudents.has(studentId) || onlineStudents.has(String(studentId));
