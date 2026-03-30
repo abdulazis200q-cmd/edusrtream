@@ -1,31 +1,68 @@
-function getSupabaseClient() {
-    if (supabase) return supabase;
-    
-    // Если мы в другом браузере, нам нужно убедиться, что window.supabaseClient уже создан модулем
-    if (window.supabaseClient) {
-        supabase = window.supabaseClient;
-    } 
-    return supabase;
-}
+// Данные для подключения (твои ключи)
 const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
 
 let supabase = null;
 
+// 1. Умная функция получения клиента (чтобы не было ошибок в разных браузерах)
 function getSupabaseClient() {
     if (supabase) return supabase;
     
-    // Проверяем глобальный клиент
     if (window.supabaseClient) {
         supabase = window.supabaseClient;
-    } 
-    // Проверяем библиотеку
-    else if (window.supabase && typeof window.supabase.createClient === 'function') {
+    } else if (window.supabase && typeof window.supabase.createClient === 'function') {
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
-    
     return supabase;
 }
+
+// 2. Функция переключения панелей с СОХРАНЕНИЕМ (чтобы не сбрасывалось при F5)
+function showPanel(panelId) {
+    const sections = document.querySelectorAll('section, .auth-container, .app-container');
+    sections.forEach(s => s.classList.add('hidden'));
+
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) appContainer.classList.remove('hidden');
+
+    const target = document.getElementById(panelId);
+    if (target) {
+        target.classList.remove('hidden');
+    }
+
+    // Сохраняем в память браузера текущую вкладку
+    localStorage.setItem('currentPanel', panelId);
+}
+
+// 3. Функция для форм входа/регистрации
+function showAuth(type) {
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) appContainer.classList.add('hidden');
+
+    const authContainer = document.querySelector('.auth-container');
+    if (authContainer) authContainer.classList.remove('hidden');
+
+    document.getElementById('login-form')?.classList.toggle('hidden', type !== 'login');
+    document.getElementById('register-form')?.classList.toggle('hidden', type !== 'register');
+}
+
+// 4. АВТО-ЗАГРУЗКА: проверка сессии и восстановление вкладки при старте
+document.addEventListener('DOMContentLoaded', async () => {
+    const client = getSupabaseClient();
+    const lastPanel = localStorage.getItem('currentPanel');
+
+    if (client) {
+        const { data: { session } } = await client.auth.getSession();
+        if (session) {
+            // Если залогинен — открываем старую панель или Dashboard
+            const toOpen = (lastPanel && !lastPanel.includes('form')) ? lastPanel : 'dashboard';
+            showPanel(toOpen);
+            if (typeof updateUI === 'function') updateUI();
+        } else {
+            // Если нет — на вход
+            showAuth('login');
+        }
+    }
+});
 
 // ПРИМЕР ИСПРАВЛЕНИЯ ВАШИХ ФУНКЦИЙ:
 async function login() {
