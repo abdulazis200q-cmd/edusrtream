@@ -1,30 +1,34 @@
-// Supabase — данные для инициализации клиента.
-// На GitHub Pages мы инициализируем клиент в `index.html` как window.supabaseClient (через ESM),
-// а тут делаем "ленивую" подхватку, чтобы порядок загрузки скриптов не ломал авторизацию.
 const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey)
 
-let supabaseClient = null;
+let supabase = null;
 
 function getSupabaseClient() {
-    if (supabaseClient) return supabaseClient;
-    if (typeof window === 'undefined') return null;
-
-    // В идеале — подхватываем то, что создал index.html
+    // 1. Если уже инициализировали — возвращаем
+    if (supabase) return supabase;
+    
+    // 2. Проверяем клиент из index.html (ESM вариант)
     if (window.supabaseClient) {
-        supabaseClient = window.supabaseClient;
-        return supabaseClient;
+        supabase = window.supabaseClient;
+    } 
+    // 3. Проверяем глобальный объект (CDN вариант)
+    else if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
-
-    // На всякий случай: если вдруг где-то используется UMD
-    if (window.supabase && typeof window.supabase.createClient === 'function') {
-        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-        return supabaseClient;
-    }
-
-    return null;
+    
+    return supabase;
 }
+
+// Инициализируем при загрузке скрипта
+supabase = getSupabaseClient();
+
+// На всякий случай: если скрипт в index.html еще не отработал, 
+// обновим ссылку, когда всё DOM-дерево будет готово
+document.addEventListener('DOMContentLoaded', () => {
+    if (!supabase) {
+        supabase = getSupabaseClient();
+    }
+});
 
 // Учебный план (основная школа)
 const SCHOOL_SUBJECTS = [
