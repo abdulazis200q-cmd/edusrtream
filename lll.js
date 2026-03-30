@@ -4,14 +4,13 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 let supabase = null;
 
 function getSupabaseClient() {
-    // 1. Если уже инициализировали — возвращаем
     if (supabase) return supabase;
     
-    // 2. Проверяем клиент из index.html (ESM вариант)
+    // Проверяем глобальный клиент
     if (window.supabaseClient) {
         supabase = window.supabaseClient;
     } 
-    // 3. Проверяем глобальный объект (CDN вариант)
+    // Проверяем библиотеку
     else if (window.supabase && typeof window.supabase.createClient === 'function') {
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
@@ -19,16 +18,32 @@ function getSupabaseClient() {
     return supabase;
 }
 
-// Инициализируем при загрузке скрипта
-supabase = getSupabaseClient();
-
-// На всякий случай: если скрипт в index.html еще не отработал, 
-// обновим ссылку, когда всё DOM-дерево будет готово
-document.addEventListener('DOMContentLoaded', () => {
-    if (!supabase) {
-        supabase = getSupabaseClient();
+// ПРИМЕР ИСПРАВЛЕНИЯ ВАШИХ ФУНКЦИЙ:
+async function login() {
+    // ВАЖНО: Обновляем ссылку на клиент прямо перед использованием!
+    const client = getSupabaseClient(); 
+    
+    if (!client) {
+        alert("Ошибка: Связь с Supabase еще не установлена. Попробуйте через секунду.");
+        return;
     }
-});
+
+    const email = document.getElementById('auth-email')?.value;
+    const password = document.getElementById('auth-password')?.value;
+
+    // Используем client вместо переменной supabase
+    const { data, error } = await client.auth.signInWithPassword({
+        email: email,
+        password: password,
+    });
+
+    if (error) {
+        alert("Ошибка: " + error.message);
+    } else {
+        console.log("Успешный вход:", data);
+        // ваш код перехода
+    }
+}
 
 // Учебный план (основная школа)
 const SCHOOL_SUBJECTS = [
@@ -354,17 +369,24 @@ function profileToUser(p) {
 }
 
 async function register() {
-    const nameEl = document.getElementById('register-name');
-    const emailEl = document.getElementById('register-email');
-    const usernameEl = document.getElementById('register-username');
-    const passwordEl = document.getElementById('register-password');
-    const passwordConfirmEl = document.getElementById('register-password-confirm');
+    const client = getSupabaseClient();
+    if (!client) return;
 
-    // Защитим от отсутствия нужных элементов
-    if (!nameEl || !emailEl || !usernameEl || !passwordEl || !passwordConfirmEl) {
-        alert('Форма регистрации недоступна.');
-        return;
+    // Проверь, что в HTML у инпутов именно эти ID:
+    const email = document.getElementById('reg-email')?.value;
+    const password = document.getElementById('reg-password')?.value;
+
+    const { data, error } = await client.auth.signUp({
+        email: email,
+        password: password,
+    });
+
+    if (error) {
+        alert("Ошибка: " + error.message);
+    } else {
+        alert("Регистрация успешна! Проверьте почту.");
     }
+}
 
     const name = nameEl.value.trim();
     const email = emailEl.value.trim();
@@ -458,7 +480,6 @@ async function register() {
         console.error(err);
         alert('Ошибка: ' + (err.message || 'Регистрация не выполнена'));
     }
-}
 
 function loadStudentData() {
     const user = currentUser;
