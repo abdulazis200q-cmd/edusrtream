@@ -1,10 +1,17 @@
+// 1. Инициализация в самом начале файла
+let attendanceLog = [];
+let gradesLog = [];
+let onlineStudents = new Set();
+let currentUser = null;
+
 const { createClient } = supabase;
-// --- 1. КОНФИГУРАЦИЯ ---
 const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1a3h2eXN5amQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3Mzc2NTQ1MCwiZXhwIjoyMDg5MzQxNDUwfQ.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
-const _supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // ваш ключ
+const _supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-
+function getSupabaseClient() {
+    return _supabase;
+}
 function addAbsence() {
     const student = document.getElementById('absence-student')?.value;
     const date = document.getElementById('absence-date')?.value;
@@ -380,22 +387,36 @@ function profileToUser(p) {
 }
 
 async function register() {
-    const client = getSupabaseClient();
-    if (!client) return;
+    const nameEl = document.getElementById('register-name');
+    const emailEl = document.getElementById('reg-email');
+    const usernameEl = document.getElementById('reg-username');
+    const passwordEl = document.getElementById('reg-password');
+    const passwordConfirmEl = document.getElementById('reg-password-confirm');
 
-    // Проверь, что в HTML у инпутов именно эти ID:
-    const email = document.getElementById('reg-email')?.value;
-    const password = document.getElementById('reg-password')?.value;
+    if (!nameEl || !emailEl || !usernameEl || !passwordEl) return;
 
-    const { data, error } = await client.auth.signUp({
-        email: email,
-        password: password,
-    });
+    const name = nameEl.value.trim();
+    const email = emailEl.value.trim();
+    const username = usernameEl.value.trim();
+    const password = passwordEl.value;
 
-    if (error) {
-        alert("Ошибка: " + error.message);
-    } else {
-        alert("Регистрация успешна! Проверьте почту.");
+    if (password !== passwordConfirmEl.value) {
+        alert('Пароли не совпадают.');
+        return;
+    }
+
+    try {
+        const { data: authData, error: authError } = await _supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: name, username } }
+        });
+
+        if (authError) throw authError;
+        alert('Регистрация успешна!');
+        switchAuthForm();
+    } catch (err) {
+        alert('Ошибка: ' + err.message);
     }
 }
 
