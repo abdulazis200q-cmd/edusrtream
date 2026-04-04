@@ -12,37 +12,30 @@ const _supabase = createClient(supabaseUrl, supabaseAnonKey)
 function getSupabaseClient() {
     return _supabase;
 }
-function addAbsence() {
-    const student = document.getElementById('absence-student')?.value;
-    const date = document.getElementById('absence-date')?.value;
-    const reason = document.getElementById('absence-reason')?.value;
 
-    if (student && student !== 'Выберите...' && date && reason) {
-        attendanceLog.push({ student, date, reason });
-        updateUI();
-        alert("Пропуск зафиксирован");
-    } else {
-        alert("Заполните форму пропуска");
-    }
-}
 
-// Обновление таблиц на экране
+
 function updateUI() {
+    // Обновление таблицы оценок
     const gBody = document.getElementById('grades-table-body');
     if (gBody) {
-        gBody.innerHTML = grades.map(g => 
-            `<tr><td>${g.student}</td><td>${g.subject}</td><td><span class="grade-badge">${g.score}</span></td><td>${g.date}</td></tr>`
-        ).join('') || '<tr><td colspan="4" style="text-align:center">Нет данных</td></tr>';
+        if (grades.length === 0) {
+            gBody.innerHTML = '<tr><td colspan="4" style="text-align:center">Нет данных</td></tr>';
+        } else {
+            gBody.innerHTML = grades.map(g => 
+                `<tr>
+                    <td>${g.student}</td>
+                    <td>${g.subject}</td>
+                    <td><span class="grade-badge">${g.score}</span></td>
+                    <td>${g.date}</td>
+                </tr>`
+            ).join('');
+        }
     }
 
-    const aBody = document.getElementById('attendance-log-body');
-    if (aBody) {
-        aBody.innerHTML = attendanceLog.map(a => 
-            `<tr><td>${a.student}</td><td>${a.date}</td><td>${a.reason}</td></tr>`
-        ).join('') || '<tr><td colspan="3" style="text-align:center">Нет пропусков</td></tr>';
-    }
+    // Обновление таблицы пропусков
+    loadAttendanceLog();
 }
-
 // --- 5. ИНИЦИАЛИЗАЦИЯ ---
 document.addEventListener('DOMContentLoaded', async () => {
     const client = getSupabaseClient();
@@ -260,20 +253,13 @@ function loginUser(user) {
 }
 
 function logout() {
-    if (currentUser) {
-        onlineStudents.delete(currentUser.id);
-        currentUser.lastSeen = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    }
-    stopPresence().catch(() => {});
-    currentUser = null;
-    supabaseClient = getSupabaseClient();
-    if (supabaseClient && supabaseClient.auth && supabaseClient.auth.signOut) supabaseClient.auth.signOut().catch(() => {});
-    const authScreen = document.getElementById('auth-screen');
-    const appContainer = document.getElementById('app-container');
-    if (authScreen) authScreen.style.display = 'flex';
-    if (appContainer) appContainer.style.display = 'none';
+        location.reload(); 
 }
 
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    updateUI();
+});
 function switchAuthForm() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
@@ -606,28 +592,13 @@ function updateStudentsList() {
     }
 }
 
-function showSection(sectionId, evt) {
-    document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
-    const section = document.getElementById(sectionId);
-    if (section) section.style.display = 'block';
-
-    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-    const activeLink = evt && evt.target ? evt.target.closest('a') : document.querySelector(`nav a[onclick*="'${sectionId}'"]`);
-    if (activeLink) activeLink.classList.add('active');
-
-    const titles = {
-        'dashboard': 'Главная',
-        'courses': 'Мои предметы',
-        'grades': 'Успеваемость',
-        'settings': 'Личные данные',
-        'students': 'Классы и учащиеся',
-        'grades-manage': 'Журнал оценок',
-        'attendance': 'Учёт пропусков'
-    };
-    const titleEl = document.getElementById('section-title');
-    if (titleEl && titles[sectionId]) titleEl.innerText = titles[sectionId];
+function showSection(sectionId) {
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(sectionId)?.classList.add('active');
+    
+    document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+    event.currentTarget.classList.add('active');
 }
-
 async function addGrade() {
     const studentNameEl = document.getElementById('select-student');
     const subjectEl = document.getElementById('grade-subject');
@@ -752,40 +723,46 @@ async function deleteGrade(id) {
 }
 
 function deleteAbsence(index) {
-    if (index >= 0 && index < attendanceLog.length) {
+    if (confirm('Удалить запись?')) {
         attendanceLog.splice(index, 1);
-        loadAttendanceLog();
+        updateUI();
     }
 }
 
 // Исправлен простейший local-only механизм для пропусков - можно настроить для Supabase отдельно!
 function addAbsence() {
-    const studentEl = document.getElementById('select-student-attendance');
+    const studentEl = document.getElementById('absence-student');
     const dateEl = document.getElementById('absence-date');
     const reasonEl = document.getElementById('absence-reason');
+
     const student = studentEl?.value;
     const date = dateEl?.value;
     const reason = reasonEl?.value;
 
     if (student && student !== 'Выберите...' && date && reason) {
         attendanceLog.push({ student, date, reason });
+        
+        // Очистка полей
         if (studentEl) studentEl.value = 'Выберите...';
         if (dateEl) dateEl.value = '';
         if (reasonEl) reasonEl.value = '';
-        loadAttendanceLog();
+
+        updateUI();
         alert('Запись о пропуске добавлена.');
     } else {
-        alert('Заполните все поля.');
+        alert('Заполните все поля формы.');
     }
 }
 
 function loadAttendanceLog() {
     const body = document.getElementById('attendance-log-body');
     if (!body) return;
-    if (!attendanceLog.length) {
+
+    if (attendanceLog.length === 0) {
         body.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">Записей о пропусках нет</td></tr>';
         return;
     }
+
     body.innerHTML = attendanceLog.map((a, i) => `
         <tr>
             <td><strong>${a.student}</strong></td>
