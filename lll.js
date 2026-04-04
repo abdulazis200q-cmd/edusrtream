@@ -1,88 +1,9 @@
+const { createClient } = supabase;
 // --- 1. КОНФИГУРАЦИЯ ---
 const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1a3h2eXN5amQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc3Mzc2NTQ1MCwiZXhwIjoyMDg5MzQxNDUwfQ.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
+const _supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-let supabaseClient = null;
-let currentUser = null;
-let grades = [];
-let attendanceLog = [];
-
-function getSupabaseClient() {
-    if (supabaseClient) return supabaseClient;
-    if (window.supabaseClient) {
-        supabaseClient = window.supabaseClient;
-    } else if (window.supabase && typeof window.supabase.createClient === 'function') {
-        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    }
-    return supabaseClient;
-}
-
-// --- 2. АВТОРИЗАЦИЯ ---
-async function login() {
-    const client = getSupabaseClient();
-    if (!client) return alert("База данных загружается, подождите...");
-    const email = document.getElementById('auth-email')?.value;
-    const password = document.getElementById('auth-password')?.value;
-    if (!email || !password) return alert("Введите почту и пароль");
-
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-    if (error) {
-        alert("Ошибка: " + error.message);
-    } else {
-        currentUser = data.user;
-        showPanel('dashboard');
-        updateUI();
-    }
-}
-
-async function register() {
-    const client = getSupabaseClient();
-    const email = document.getElementById('reg-email')?.value;
-    const password = document.getElementById('reg-password')?.value;
-    if (!email || !password) return alert("Заполните все поля");
-    const { error } = await client.auth.signUp({ email, password });
-    if (error) alert(error.message);
-    else alert("Регистрация успешна! Теперь войдите.");
-}
-
-async function logout() {
-    const client = getSupabaseClient();
-    if (client) await client.auth.signOut();
-    currentUser = null;
-    localStorage.removeItem('currentPanel');
-    location.reload();
-}
-
-// --- 3. НАВИГАЦИЯ ---
-function showPanel(panelId) {
-    document.querySelectorAll('section, .auth-container, .app-container').forEach(s => s.classList.add('hidden'));
-    document.querySelector('.app-container')?.classList.remove('hidden');
-    const target = document.getElementById(panelId);
-    if (target) target.classList.remove('hidden');
-    localStorage.setItem('currentPanel', panelId);
-}
-
-function showAuth(type) {
-    document.querySelectorAll('.app-container, section').forEach(s => s.classList.add('hidden'));
-    document.querySelector('.auth-container')?.classList.remove('hidden');
-    document.getElementById('login-form')?.classList.toggle('hidden', type !== 'login');
-    document.getElementById('register-form')?.classList.toggle('hidden', type !== 'register');
-}
-
-// --- 4. ОПЕРАЦИИ С ДАННЫМИ ---
-function addGrade() {
-    const student = document.getElementById('grade-student')?.value;
-    const subject = document.getElementById('grade-subject')?.value;
-    const score = document.getElementById('grade-value')?.value;
-
-    if (student && student !== 'Выберите...' && subject && score) {
-        grades.push({ student, subject, score, date: new Date().toLocaleDateString() });
-        updateUI();
-        alert("Оценка сохранена");
-    } else {
-        alert("Заполните все данные в форме");
-    }
-}
 
 function addAbsence() {
     const student = document.getElementById('absence-student')?.value;

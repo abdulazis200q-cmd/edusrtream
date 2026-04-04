@@ -7,16 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="fasd.css">
     <!-- ESM init: чтобы избежать конфликтов глобальной переменной `supabase` -->
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.52.1/+esm';
-    
-        const supabaseUrl = 'https://jainlwexceuvkhvysyjd.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaW5sd2V4Y2V1dmtodnlzeWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjU0NTAsImV4cCI6MjA4OTM0MTQ1MH0.AkndWHxj_pANu48U5kKcSUkPhbnrNyHsVZlIxlhDFw4';
-    
-        // Создаем клиент один раз и кладем в "глобальное окно"
-        window.supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-        console.log("Supabase initialized!");
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="lll.js" defer></script>
     
     
 </head>
@@ -63,25 +55,25 @@
 
                 <div class="form-group">
                     <label>Школьный email</label>
-                    <input type="email" id="register-email" autocomplete="email" placeholder="">
+                    <input type="email" id="reg-email" autocomplete="email" placeholder="">
                 </div>
 
                 <div class="form-group">
                     <label>Логин</label>
-                    <input type="text" id="register-username" autocomplete="username" placeholder="">
+                    <input type="text" id="reg-username" autocomplete="username" placeholder="">
                 </div>
 
                 <div class="form-group">
                     <label>Пароль:</label>
-                    <input type="password" id="register-password" placeholder="••••••••">
+                    <input type="password" id="reg-password" placeholder="••••••••">
                 </div>
 
                 <div class="form-group">
                     <label>Подтвердите пароль:</label>
-                    <input type="password" id="register-password-confirm" placeholder="••••••••">
+                    <input type="password" id="reg-password-confirm" placeholder="••••••••">
                 </div>
 
-                <button class="auth-btn" onclick="register()"><i class="fas fa-user-plus"></i> Зарегистрироваться</button>
+                <button class="auth-btn" onclick="reg()"><i class="fas fa-user-plus"></i> Зарегистрироваться</button>
 
                 <div class="auth-toggle">
                     Уже есть аккаунт? <button onclick="switchAuthForm()">Войти</button>
@@ -292,6 +284,5 @@
         <option value="Информатика">
         <option value="Физическая культура">
     </datalist>
-    <script src="lll.js" defer></script>
 </body>
 </html>
