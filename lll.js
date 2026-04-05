@@ -253,7 +253,30 @@ function loginUser(user) {
 }
 
 function logout() {
-        location.reload(); 
+        // Корректное завершение сессии: скрыть приложение, показать экран входа, очистить данные пользователя
+        stopPresence();
+        currentUser = null;
+        if (window.onlineStudents) window.onlineStudents.clear?.();
+        // Сброс UI (имя, аватар, только актуальные блоки)
+        const appContainer = document.getElementById('app-container');
+        const authScreen = document.getElementById('auth-screen');
+        if (appContainer) appContainer.style.display = 'none';
+        if (authScreen) authScreen.style.display = 'flex';
+        // Чистим поля ввода (без reload)
+        ['login-email', 'login-password', 'register-name', 'reg-email', 'reg-username', 'reg-password'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        // Сбрасываем блоки навигации
+        const studentNav = document.getElementById('student-nav');
+        const teacherNav = document.getElementById('teacher-nav');
+        if (studentNav) studentNav.style.display = 'none';
+        if (teacherNav) teacherNav.style.display = 'none';
+        // Сбросить значение имени и аватара, если применимо
+        const userName = document.getElementById('user-name');
+        const userAvatar = document.getElementById('user-avatar');
+        if (userName) userName.innerText = '';
+        if (userAvatar) userAvatar.innerText = '';
 }
 
 // Инициализация при загрузке

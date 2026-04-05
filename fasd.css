@@ -268,6 +268,155 @@
             overflow-y: auto;
         }
 
+        #app-container {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: row;
+        }
+
+        /* SIDEBAR (nav) is already styled above */
+
+        /* AUTH SCREEN (already present as .auth-container, .auth-box in top of file) */
+
+        /* Section general layout */
+        .content-section {
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 35px rgba(0,0,0,0.07);
+            padding: 30px 32px;
+            margin-bottom: 28px;
+        }
+
+        /* Tables (students, grades, attendance) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+        }
+
+        th {
+            background: #f0f3fe;
+            color: #363973;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        /* Status badge for online/offline */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .status-online {
+            background: #51cf66;
+            color: white;
+        }
+        .status-offline {
+            background: #adb5bd;
+            color: #fff;
+        }
+
+        /* Editable inputs for registration/login */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            padding: 10px 12px;
+            border: 1px solid #ccd7ff;
+            border-radius: 7px;
+            font-size: 15px;
+            background: #f9fbff;
+            margin-top: 2px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .form-group input:focus {
+            border: 1.5px solid #667eea;
+            background: #eef2ff;
+        }
+
+        /* Auth toggler link */
+        .auth-toggle button {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: underline;
+            padding: 0;
+        }
+
+        /* Auth submit button */
+        .auth-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 13px 0;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 20px 0 8px 0;
+            cursor: pointer;
+            transition: background 0.18s;
+            box-shadow: 0 3px 18px rgba(102,126,234,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .auth-btn:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        /* Titles */
+        .auth-title, .section-title, h2 {
+            color: #2d3561;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        .auth-subtitle {
+            color: #616c9c;
+            margin-bottom: 16px;
+            font-size: 15px;
+        }
+
+        /* Hide app when not authenticated */
+        #app-container {
+            display: none;
+        }
+        /* Hide auth-screen when authenticated */
+        #auth-screen {
+            display: flex;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+            overflow-y: auto;
+        }
+
         header {
             display: flex;
             justify-content: space-between;
