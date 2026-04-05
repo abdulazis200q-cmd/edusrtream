@@ -286,60 +286,83 @@ document.addEventListener('DOMContentLoaded', () => {
 function switchAuthForm() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
-    if (!loginForm || !registerForm) return;
-    loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
-    registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
-}
-
-function renderStudentsTable() {
-    const body = document.getElementById('students-body');
-    if (!body) return;
-
-    body.innerHTML = students.filter(s => s.role === 'student').map(student => {
-        const isOnline = studentIsOnline(student.id);
-        return `
-            <tr>
-                <td><strong>${student.name}</strong></td>
-                <td>${student.email}</td>
-                <td><strong style="color: #667eea;">${student.avgGrade}</strong>/5</td>
-                <td><span style="background: ${student.absences > 3 ? '#ff6b6b' : '#51cf66'}; color: white; padding: 4px 8px; border-radius: 6px;">${student.absences}</span></td>
-                <td>
-                    <span class="status-badge ${isOnline ? 'status-online' : 'status-offline'}">
-                        ${isOnline ? 'В сети' : 'Не в сети'}
-                    </span>
-                </td>
-                <td style="font-size: 12px; color: #888;">
-                    ${isOnline ? 'Сейчас' : (student.lastSeen || 'Давно')}
-                </td>
-            </tr>
-        `;
-    }).join(''); 
+    if (loginForm && registerForm) {
+        if (loginForm.style.display === 'none') {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+        } else {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        }
+    }
 }
 
 async function login() {
-    const emailOrUsernameEl = document.getElementById('login-email');
+    const emailEl = document.getElementById('login-email');
     const passwordEl = document.getElementById('login-password');
-    if (!emailOrUsernameEl || !passwordEl) {
-        alert('Форма входа недоступна. Обновите страницу.');
-        return;
-    }
-    const emailOrUsername = emailOrUsernameEl.value.trim();
+    
+    if (!emailEl || !passwordEl) return;
+
+    const email = emailEl.value.trim();
     const password = passwordEl.value;
-    let supabaseLastError = null;
 
-    if (!emailOrUsername || !password) {
-        alert('Заполните все поля.');
+    if (!email || !password) {
+        alert('Введите логин и пароль');
         return;
     }
 
-    const localUser = students.find(s =>
-        (s.email === emailOrUsername || s.username === emailOrUsername) && s.password === password
-    );
+    try {
+        const { data, error } = await _supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
 
-    if (localUser) {
-        loginUser(localUser);
+        if (error) throw error;
+
+        alert('Вход выполнен!');
+        // Здесь можно вызвать функцию загрузки данных пользователя
+        if (typeof loadStudentData === 'function') loadStudentData();
+        
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'flex';
+    } catch (err) {
+        alert('Ошибка входа: ' + err.message);
+    }
+}
+
+async function login() {
+    const emailEl = document.getElementById('login-email');
+    const passwordEl = document.getElementById('login-password');
+    
+    if (!emailEl || !passwordEl) return;
+
+    const email = emailEl.value.trim();
+    const password = passwordEl.value;
+
+    if (!email || !password) {
+        alert('Введите логин и пароль');
         return;
     }
+
+    try {
+        const { data, error } = await _supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (error) throw error;
+
+        alert('Вход выполнен!');
+        // Здесь можно вызвать функцию загрузки данных пользователя
+        if (typeof loadStudentData === 'function') loadStudentData();
+        
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'flex';
+    } catch (err) {
+        alert('Ошибка входа: ' + err.message);
+    }
+}
+    
 
     supabaseClient = getSupabaseClient();
     if (supabaseClient) {
@@ -371,11 +394,11 @@ async function login() {
             console.error(e);
             supabaseLastError = (e && e.message) ? e.message : String(e);
         }
-    }
+    
 
     const reason = supabaseLastError ? ` Причина: ${supabaseLastError}` : '';
     alert('Неверный логин или пароль.' + reason);
-}
+    }
 
 function profileToUser(p) {
     // Защитим, если нет данных
@@ -396,27 +419,20 @@ function profileToUser(p) {
 }
 
 async function register() {
-    // 1. Получаем элементы DOM
     const nameEl = document.getElementById('register-name');
     const emailEl = document.getElementById('register-email');
     const usernameEl = document.getElementById('register-username');
     const passwordEl = document.getElementById('register-password');
     const passwordConfirmEl = document.getElementById('register-password-confirm');
 
-    // Проверка на существование элементов
-    if (!nameEl || !emailEl || !usernameEl || !passwordEl || !passwordConfirmEl) {
-        alert('Ошибка: Элементы формы не найдены.');
-        return;
-    }
+    if (!nameEl || !emailEl || !usernameEl || !passwordEl || !passwordConfirmEl) return;
 
-    // 2. Извлекаем и очищаем значения (БЕЗ ЛИШНИХ СКОБОК)
     const name = nameEl.value.trim();
     const email = emailEl.value.trim();
     const username = usernameEl.value.trim();
     const password = passwordEl.value;
     const passwordConfirm = passwordConfirmEl.value;
 
-    // 3. Валидация данных
     if (!name || !email || !username || !password || !passwordConfirm) {
         alert('Заполните все поля.');
         return;
@@ -427,61 +443,19 @@ async function register() {
         return;
     }
 
-    // Проверка локального массива
-    if (typeof students !== 'undefined' && students.find(s => s.email === email || s.username === username)) {
-        alert('Учётная запись с таким email или логином уже есть.');
-        return;
-    }
-
-    // 4. Работа с Supabase
-    const supabaseClient = getSupabaseClient();
-    
-    if (!supabaseClient) {
-        alert('Сервис авторизации не загружен.');
-        return;
-    }
-
     try {
-        // Регистрация в Auth
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+        const { data: authData, error: authError } = await _supabase.auth.signUp({
             email,
             password,
-            options: { data: { full_name: name, username: username } }
+            options: { data: { full_name: name, username } }
         });
 
         if (authError) throw authError;
 
-        if (!authData || !authData.user) {
-            alert('Не удалось создать учётную запись.');
-            return;
-        }
-
-        // Создание профиля в таблице profiles
-        const schoolGroups = ['9«А»', '9«Б»', '10«А»', '10«Б»'];
-        const group = schoolGroups[Math.floor(Math.random() * schoolGroups.length)];
-        
-        const { error: profileError } = await supabaseClient
-            .from('profiles')
-            .insert([{
-                id: authData.user.id,
-                full_name: name,
-                username: username,
-                email: email,
-                group: group,
-                role: 'student',
-                avg_grade: 4.5,
-                absences: 0,
-                courses: typeof pickRandomSubjects === 'function' ? pickRandomSubjects(5) : []
-            }]);
-
-        if (profileError) console.error('Профиль не создан:', profileError);
-
-        alert('Регистрация успешна! Войдите в систему.');
-        if (typeof switchAuthForm === 'function') switchAuthForm();
-
+        alert('Регистрация успешна! Теперь вы можете войти.');
+        switchAuthForm();
     } catch (err) {
-        console.error('Ошибка:', err);
-        alert('Ошибка регистрации: ' + err.message);
+        alert('Ошибка: ' + err.message);
     }
 }
     supabaseClient = getSupabaseClient();
