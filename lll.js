@@ -396,45 +396,24 @@ function profileToUser(p) {
 }
 
 async function register() {
+    // 1. Получаем элементы
     const nameEl = document.getElementById('register-name');
     const emailEl = document.getElementById('register-email');
     const usernameEl = document.getElementById('register-username');
     const passwordEl = document.getElementById('register-password');
     const passwordConfirmEl = document.getElementById('register-password-confirm');
 
+    // Проверка на существование элементов в DOM
     if (!nameEl || !emailEl || !usernameEl || !passwordEl || !passwordConfirmEl) return;
 
-    const name = nameEl.value.trim();
-    const email = emailEl.value.trim();
-    const username = usernameEl.value.trim();
-    const password = passwordEl.value;
-
-    if (password !== passwordConfirmEl.value) {
-        alert('Пароли не совпадают.');
-        return;
-    }
-
-    try {
-        const { data: authData, error: authError } = await _supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { full_name: name, username } }
-        });
-
-        if (authError) throw authError;
-        alert('Регистрация успешна!');
-        switchAuthForm();
-    } catch (err) {
-        alert('Ошибка: ' + err.message);
-    }
-}
-
+    // 2. Извлекаем значения
     const name = nameEl.value.trim();
     const email = emailEl.value.trim();
     const username = usernameEl.value.trim();
     const password = passwordEl.value;
     const passwordConfirm = passwordConfirmEl.value;
 
+    // 3. Валидация (Теперь внутри функции — return будет работать)
     if (!name || !email || !username || !password || !passwordConfirm) {
         alert('Заполните все поля.');
         return;
@@ -445,11 +424,34 @@ async function register() {
         return;
     }
 
-    if (students.find(s => s.email === email || s.username === username)) {
+    // Пример локальной проверки (если массив students доступен)
+    if (typeof students !== 'undefined' && students.find(s => s.email === email || s.username === username)) {
         alert('Учётная запись с таким email или логином уже есть.');
         return;
     }
 
+    // 4. Логика регистрации в Supabase
+    try {
+        const { data: authData, error: authError } = await _supabase.auth.signUp({
+            email,
+            password,
+            options: { 
+                data: { 
+                    full_name: name, 
+                    username: username 
+                } 
+            }
+        });
+
+        if (authError) throw authError;
+
+        alert('Регистрация успешна! Проверьте почту для подтверждения.');
+        if (typeof switchAuthForm === 'function') switchAuthForm();
+        
+    } catch (err) {
+        alert('Ошибка: ' + err.message);
+    }
+} // <--- Конец функции. Весь код выше находится внутри.
     supabaseClient = getSupabaseClient();
     if (!supabaseClient) {
         alert('Сервис авторизации не загружен. Обновите страницу.');
