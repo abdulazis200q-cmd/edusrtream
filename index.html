@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">      
     <title>ГБОУ «Эдустрим» — электронный журнал</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="fasd.css">
     <!-- ESM init: чтобы избежать конфликтов глобальной переменной `supabase` -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="lll.js" defer></script>
+<script src="lll.js" defer></script>
+    
+    
 </head>
 <body>
     <!-- AUTH SCREEN -->
@@ -19,54 +20,68 @@
                 <i class="fas fa-graduation-cap"></i>
                 <span>Эдустрим</span>
             </div>
+
             <!-- LOGIN -->
             <div id="login-form" style="display: block;">
                 <h2 class="auth-title">Вход</h2>
                 <p class="auth-subtitle">Электронный журнал и учёт посещаемости</p>
-                <div class="form-group">
-                    <label>Логин или email</label>
-                    <input type="text" id="login-email" autocomplete="username" placeholder="">
-                </div>
+
+               
+                
+
                 <div class="form-group">
                     <label>Пароль</label>
                     <input type="password" id="login-password" autocomplete="current-password" placeholder="">
+                    <label>Логин или email</label>
+                    <input type="text" id="login-email" autocomplete="username" placeholder="">
                 </div>
+
                 <button class="auth-btn" onclick="login()"><i class="fas fa-sign-in-alt"></i> Войти</button>
+
                 <div class="auth-toggle">
-                    Нет аккаунта? <button type="button" onclick="switchAuthForm()">Регистрация учащегося</button>
+                    Нет аккаунта? <button onclick="switchAuthForm()">Регистрация учащегося</button>
                 </div>
             </div>
+
             <!-- REGISTER -->
             <div id="register-form" style="display: none;">
                 <h2 class="auth-title">Регистрация</h2>
                 <p class="auth-subtitle">Учётная запись для учащегося</p>
+
                 <div class="form-group">
                     <label>ФИО полностью</label>
                     <input type="text" id="register-name" autocomplete="name" placeholder="">
                 </div>
+
                 <div class="form-group">
                     <label>Школьный email</label>
                     <input type="email" id="reg-email" autocomplete="email" placeholder="">
                 </div>
+
                 <div class="form-group">
                     <label>Логин</label>
                     <input type="text" id="reg-username" autocomplete="username" placeholder="">
                 </div>
+
                 <div class="form-group">
                     <label>Пароль:</label>
                     <input type="password" id="reg-password" placeholder="••••••••">
                 </div>
+
                 <div class="form-group">
                     <label>Подтвердите пароль:</label>
                     <input type="password" id="reg-password-confirm" placeholder="••••••••">
                 </div>
+
                 <button class="auth-btn" onclick="reg()"><i class="fas fa-user-plus"></i> Зарегистрироваться</button>
+
                 <div class="auth-toggle">
-                    Уже есть аккаунт? <button type="button" onclick="switchAuthForm()">Войти</button>
+                    Уже есть аккаунт? <button onclick="switchAuthForm()">Войти</button>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- MAIN APP -->
     <div id="app-container" style="display: none;">
         <div class="container">
@@ -75,19 +90,23 @@
                     <i class="fas fa-graduation-cap"></i>
                     <span>Эдустрим</span>
                 </div>
+
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Выход</button>
+
                 <nav id="student-nav">
-                    <a href="javascript:void(0)" onclick="showSection('dashboard')" class="active"><i class="fas fa-home"></i> <span>Главная</span></a>
-                    <a href="javascript:void(0)" onclick="showSection('courses')"><i class="fas fa-book"></i> <span>Предметы</span></a>
-                    <a href="javascript:void(0)" onclick="showSection('grades')"><i class="fas fa-star"></i> <span>Оценки</span></a>
-                    <a href="javascript:void(0)" onclick="showSection('settings')"><i class="fas fa-cog"></i> <span>Настройки</span></a>
+                    <a onclick="showSection('dashboard')" class="active"><i class="fas fa-home"></i> <span>Главная</span></a>
+                    <a onclick="showSection('courses')"><i class="fas fa-book"></i> <span>Предметы</span></a>
+                    <a onclick="showSection('grades')"><i class="fas fa-star"></i> <span>Оценки</span></a>
+                    <a onclick="showSection('settings')"><i class="fas fa-cog"></i> <span>Настройки</span></a>
                 </nav>
+
                 <nav id="teacher-nav" style="display: none;">
-                    <a href="javascript:void(0)" onclick="showSection('students')" class="active"><i class="fas fa-users"></i> <span>Студенты</span></a>
-                    <a href="javascript:void(0)" onclick="showSection('grades-manage')"><i class="fas fa-edit"></i> <span>Оценки</span></a>
-                    <a href="javascript:void(0)" onclick="showSection('attendance')"><i class="fas fa-clipboard"></i> <span>Пропуски</span></a>
+                    <a onclick="showSection('students')" class="active"><i class="fas fa-users"></i> <span>Студенты</span></a>
+                    <a onclick="showSection('grades-manage')"><i class="fas fa-edit"></i> <span>Оценки</span></a>
+                    <a onclick="showSection('attendance')"><i class="fas fa-clipboard"></i> <span>Пропуски</span></a>
                 </nav>
             </aside>
+
             <main class="main-content">
                 <header>
                     <h1 id="section-title">Главная</h1>
@@ -96,6 +115,7 @@
                         <div class="avatar" id="user-avatar"></div>
                     </div>
                 </header>
+
                 <!-- СТУДЕНТ -->
                 <section id="dashboard" class="content-section">
                     <div class="stats-grid">
@@ -113,9 +133,11 @@
                         </div>
                     </div>
                 </section>
+
                 <section id="courses" class="content-section" style="display: none;">
                     <div class="course-list" id="courses-list"></div>
                 </section>
+
                 <section id="grades" class="content-section" style="display: none;">
                     <table class="grades-table">
                         <thead>
@@ -128,6 +150,7 @@
                         <tbody id="grades-body"></tbody>
                     </table>
                 </section>
+
                 <section id="settings" class="content-section" style="display: none;">
                     <div class="settings-form">
                         <h2>Личные данные</h2>
@@ -148,6 +171,7 @@
                         </form>
                     </div>
                 </section>
+
                 <!-- ПРЕПОДАВАТЕЛЬ -->
                 <section id="students" class="content-section" style="display: none;">
                     <div class="students-list">
@@ -168,6 +192,7 @@
                         </table>
                     </div>
                 </section>
+
                 <section id="grades-manage" class="content-section" style="display: none;">
                     <div class="grades-manage">
                         <h2><i class="fas fa-edit"></i> Журнал оценок</h2>
@@ -190,7 +215,7 @@
                                 <label><i class="fas fa-calendar"></i> Дата:</label>
                                 <input type="date" id="grade-date">
                             </div>
-                            <button onclick="addGrade()" class="btn-add"><i class="fas fa-plus"></i> Внести в журнал</button>
+                                <button onclick="addGrade()" class="btn-add"><i class="fas fa-plus"></i> Внести в журнал</button>
                         </div>
                         <table class="grades-log">
                             <thead>
@@ -206,6 +231,7 @@
                         </table>
                     </div>
                 </section>
+
                 <section id="attendance" class="content-section" style="display: none;">
                     <div class="attendance-manage">
                         <h2><i class="fas fa-clipboard"></i> Учёт пропусков</h2>
@@ -242,6 +268,7 @@
             </main>
         </div>
     </div>
+
     <datalist id="school-subjects-dl">
         <option value="Алгебра">
         <option value="Геометрия">

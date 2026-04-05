@@ -397,12 +397,12 @@ function profileToUser(p) {
 
 async function register() {
     const nameEl = document.getElementById('register-name');
-    const emailEl = document.getElementById('reg-email');
-    const usernameEl = document.getElementById('reg-username');
-    const passwordEl = document.getElementById('reg-password');
-    const passwordConfirmEl = document.getElementById('reg-password-confirm');
+    const emailEl = document.getElementById('register-email');
+    const usernameEl = document.getElementById('register-username');
+    const passwordEl = document.getElementById('register-password');
+    const passwordConfirmEl = document.getElementById('register-password-confirm');
 
-    if (!nameEl || !emailEl || !usernameEl || !passwordEl) return;
+    if (!nameEl || !emailEl || !usernameEl || !passwordEl || !passwordConfirmEl) return;
 
     const name = nameEl.value.trim();
     const email = emailEl.value.trim();
