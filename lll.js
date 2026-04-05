@@ -409,7 +409,7 @@ async function register() {
         return;
     }
 
-    // 2. Извлекаем и очищаем значения
+    // 2. Извлекаем и очищаем значения (БЕЗ ЛИШНИХ СКОБОК)
     const name = nameEl.value.trim();
     const email = emailEl.value.trim();
     const username = usernameEl.value.trim();
@@ -427,7 +427,7 @@ async function register() {
         return;
     }
 
-    // Проверка локального массива (если нужно)
+    // Проверка локального массива
     if (typeof students !== 'undefined' && students.find(s => s.email === email || s.username === username)) {
         alert('Учётная запись с таким email или логином уже есть.');
         return;
@@ -435,6 +435,7 @@ async function register() {
 
     // 4. Работа с Supabase
     const supabaseClient = getSupabaseClient();
+    
     if (!supabaseClient) {
         alert('Сервис авторизации не загружен.');
         return;
@@ -470,19 +471,19 @@ async function register() {
                 role: 'student',
                 avg_grade: 4.5,
                 absences: 0,
-                courses: pickRandomSubjects(5)
+                courses: typeof pickRandomSubjects === 'function' ? pickRandomSubjects(5) : []
             }]);
 
         if (profileError) console.error('Профиль не создан:', profileError);
 
         alert('Регистрация успешна! Войдите в систему.');
-        switchAuthForm();
+        if (typeof switchAuthForm === 'function') switchAuthForm();
 
     } catch (err) {
         console.error('Ошибка:', err);
         alert('Ошибка регистрации: ' + err.message);
     }
-} // <--- Конец функции. После этого должен идти сразу loadStudentData
+}
     supabaseClient = getSupabaseClient();
     if (!supabaseClient) {
         alert('Сервис авторизации не загружен. Обновите страницу.');
