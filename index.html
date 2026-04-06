@@ -26,22 +26,25 @@
             <div id="login-form" style="display: block;">
                 <h2 class="auth-title">Вход</h2>
                 <p class="auth-subtitle">Электронный журнал и учёт посещаемости</p>
-
-               
-                
-
+            
+                <div class="form-group">
+                    <label>Логин или email</label>
+                    <input type="email" id="login-email" placeholder="example@edustream.ru">
+                </div>
+            
                 <div class="form-group">
                     <label>Пароль</label>
-                    <input type="password" id="login-password" autocomplete="current-password" placeholder="">
-                    <label>Логин или email</label>
-                    <input type="text" id="login-email" autocomplete="username" placeholder="">
+                    <input type="password" id="login-password" autocomplete="current-password" placeholder="Введите пароль">
                 </div>
-
-                <button class="auth-btn" onclick="login()"><i class="fas fa-sign-in-alt"></i> Войти</button>
-
-                <div class="auth-toggle">
-                    Нет аккаунта? <button onclick="switchAuthForm()">Регистрация учащегося</button>
-                </div>
+            
+                <button class="btn-auth" onclick="login()">
+                    <span>Войти</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            
+                <p class="auth-footer">
+                    Нет аккаунта? <button onclick="switchAuthForm()">Зарегистрироваться</button>
+                </p>
             </div>
 
             <!-- REGISTER -->
