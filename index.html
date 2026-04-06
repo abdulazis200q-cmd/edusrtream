@@ -94,16 +94,16 @@
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Выход</button>
 
                 <nav id="student-nav">
-                    <a onclick="showSection('dashboard')" class="active"><i class="fas fa-home"></i> <span>Главная</span></a>
-                    <a onclick="showSection('courses')"><i class="fas fa-book"></i> <span>Предметы</span></a>
-                    <a onclick="showSection('grades')"><i class="fas fa-star"></i> <span>Оценки</span></a>
-                    <a onclick="showSection('settings')"><i class="fas fa-cog"></i> <span>Настройки</span></a>
+                    <a onclick="showSection('dashboard', this)" class="active"><i class="fas fa-home"></i> <span>Главная</span></a>
+                    <a onclick="showSection('courses', this)"><i class="fas fa-book"></i> <span>Предметы</span></a>
+                    <a onclick="showSection('grades', this)"><i class="fas fa-star"></i> <span>Оценки</span></a>
+                    <a onclick="showSection('settings', this)"><i class="fas fa-cog"></i> <span>Настройки</span></a>
                 </nav>
-
+                
                 <nav id="teacher-nav" style="display: none;">
-                    <a onclick="showSection('students')" class="active"><i class="fas fa-users"></i> <span>Студенты</span></a>
-                    <a onclick="showSection('grades-manage')"><i class="fas fa-edit"></i> <span>Оценки</span></a>
-                    <a onclick="showSection('attendance')"><i class="fas fa-clipboard"></i> <span>Пропуски</span></a>
+                    <a onclick="showSection('students', this)" class="active"><i class="fas fa-users"></i> <span>Студенты</span></a>
+                    <a onclick="showSection('grades-manage', this)"><i class="fas fa-edit"></i> <span>Оценки</span></a>
+                    <a onclick="showSection('attendance', this)"><i class="fas fa-clipboard"></i> <span>Пропуски</span></a>
                 </nav>
             </aside>
 

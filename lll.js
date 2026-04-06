@@ -6,11 +6,8 @@ const _supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 let currentUser = null;
 let attendanceLog = [];
-let gradesLog = [];
-let onlineStudents = new Set();
-let presenceChannel = null;
 
-// 2. Облегченный список студентов (без паролей!)
+// Список студентов для интерфейса (пароли здесь не нужны, они в Supabase Auth)
 const students = [
     { id: 1, name: "Адылбеков Адылбий", email: "student1@edustream.ru", username: "student1", password: "password123", group: "9«А»", role: "student", avgGrade: 4.0, absences: 2, courses: ["Алгебра", "Русский язык", "История", "Биология"] },
     { id: 2, name: "Алиев Амир", email: "student2@edustream.ru", username: "student2", password: "password123", group: "9«А»", role: "student", avgGrade: 3.5, absences: 1, courses: ["Геометрия", "Литература", "Английский язык", "Информатика"] },
@@ -51,7 +48,6 @@ window.login = async function() {
         const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Ищем данные в локальном списке или создаем объект из данных Auth
         const localData = students.find(s => s.email === email) || { 
             name: data.user.user_metadata.full_name || email.split('@')[0],
             role: email.includes('teacher') ? 'teacher' : 'student',
@@ -60,7 +56,7 @@ window.login = async function() {
 
         loginUser({ ...data.user, ...localData });
     } catch (err) {
-        alert('Ошибка: ' + err.message);
+        alert('Ошибка входа: ' + err.message + '. Если вы только зарегистрировались, проверьте почту для подтверждения.');
     }
 };
 
@@ -68,6 +64,12 @@ window.reg = async function() {
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value;
+    const confirmPassword = document.getElementById('reg-password-confirm').value;
+
+    if (password !== confirmPassword) {
+        alert('Пароли не совпадают!');
+        return;
+    }
 
     try {
         const { data, error } = await _supabase.auth.signUp({
@@ -76,21 +78,18 @@ window.reg = async function() {
             options: { data: { full_name: name } }
         });
         if (error) throw error;
-        alert('Регистрация успешна! Проверьте почту.');
+        alert('Регистрация успешна! ВАЖНО: Проверьте почту и подтвердите аккаунт перед входом.');
         switchAuthForm();
     } catch (err) {
-        alert('Ошибка: ' + err.message);
+        alert('Ошибка регистрации: ' + err.message);
     }
 };
 
 function loginUser(user) {
     currentUser = user;
-    
-    // Переключение экранов
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
 
-    // Обновление профиля в шапке
     document.getElementById('user-name').innerText = `${user.name} · ${user.role === 'teacher' ? 'Учитель' : 'Ученик'}`;
     document.getElementById('user-avatar').innerText = user.name.charAt(0);
 
@@ -103,10 +102,8 @@ function loginUser(user) {
     } else {
         document.getElementById('student-nav').style.display = 'flex';
         document.getElementById('teacher-nav').style.display = 'none';
-        loadStudentData();
         showSection('dashboard');
     }
-    startPresence(user);
 }
 
 window.logout = async function() {
@@ -119,20 +116,29 @@ window.logout = async function() {
 window.switchAuthForm = function() {
     const loginForm = document.getElementById('login-form');
     const regForm = document.getElementById('register-form');
-    loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
-    regForm.style.display = regForm.style.display === 'none' ? 'block' : 'none';
+    const isLoginVisible = loginForm.style.display !== 'none';
+    loginForm.style.display = isLoginVisible ? 'none' : 'block';
+    regForm.style.display = isLoginVisible ? 'block' : 'none';
 };
 
-window.showSection = function(sectionId) {
+window.showSection = function(sectionId, element) {
+    // Скрываем все секции
     document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+    
+    // Показываем нужную
     const target = document.getElementById(sectionId);
     if (target) target.style.display = 'block';
 
+    // Обновляем заголовок
+    const titles = { 'dashboard': 'Главная', 'courses': 'Предметы', 'grades': 'Оценки', 'settings': 'Настройки', 'students': 'Учащиеся', 'grades-manage': 'Журнал', 'attendance': 'Пропуски' };
+    document.getElementById('section-title').innerText = titles[sectionId] || 'Раздел';
+
+    // Подсветка активной ссылки
     document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
-    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    if (element) element.classList.add('active');
 };
 
-// --- ФУНКЦИИ ДАННЫХ ---
+// --- РАБОТА С ДАННЫМИ ---
 
 function loadStudentsList() {
     const body = document.getElementById('students-body');
@@ -163,21 +169,26 @@ function loadStudentsList() {
 async function loadGradesLog() {
     const body = document.getElementById('grades-log-body');
     if (!body) return;
-    const { data } = await _supabase.from('grades').select('*').order('created_at', { ascending: false });
-    
-    if (!data || data.length === 0) {
-        body.innerHTML = '<tr><td colspan="5" style="text-align:center">Нет записей</td></tr>';
-        return;
+    try {
+        const { data, error } = await _supabase.from('grades').select('*').order('date', { ascending: false });
+        if (error) throw error;
+        
+        if (!data || data.length === 0) {
+            body.innerHTML = '<tr><td colspan="5" style="text-align:center">Нет записей</td></tr>';
+            return;
+        }
+        body.innerHTML = data.map(g => `
+            <tr>
+                <td>${g.student_name}</td>
+                <td>${g.subject}</td>
+                <td>${g.grade}</td>
+                <td>${g.date}</td>
+                <td><button onclick="deleteGrade('${g.id}')" class="btn-delete">×</button></td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error("Ошибка загрузки оценок:", e.message);
     }
-    body.innerHTML = data.map(g => `
-        <tr>
-            <td>${g.student_name}</td>
-            <td>${g.subject}</td>
-            <td>${g.grade}</td>
-            <td>${g.date}</td>
-            <td><button onclick="deleteGrade('${g.id}')" class="btn-delete">×</button></td>
-        </tr>
-    `).join('');
 }
 
 window.addGrade = async function() {
@@ -186,7 +197,10 @@ window.addGrade = async function() {
     const grade = document.getElementById('grade-value').value;
     const date = document.getElementById('grade-date').value;
 
-    if (student === 'Выберите...' || !grade) return alert('Заполните данные');
+    if (student === 'Выберите...' || !grade || !subject || !date) {
+        alert('Заполните все поля!');
+        return;
+    }
 
     const { error } = await _supabase.from('grades').insert([{
         student_name: student,
@@ -195,37 +209,28 @@ window.addGrade = async function() {
         date
     }]);
 
-    if (!error) {
+    if (error) {
+        alert('Ошибка БД: ' + error.message);
+    } else {
         alert('Оценка добавлена');
         loadGradesLog();
     }
 };
 
-function loadStudentData() {
-    // Демо-данные для дашборда ученика
-    if (document.getElementById('avg-grade')) document.getElementById('avg-grade').innerText = '4.5';
-}
-
-// --- PRESENCE (ONLINE) ---
-async function startPresence(user) {
-    presenceChannel = _supabase.channel('online-users');
-    presenceChannel
-        .on('presence', { event: 'sync' }, () => {
-            const state = presenceChannel.presenceState();
-            console.log('Online:', state);
-        })
-        .subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                await presenceChannel.track({ user: user.name, online_at: new Date().toISOString() });
-            }
-        });
-}
+window.deleteGrade = async function(id) {
+    if (confirm('Удалить оценку?')) {
+        const { error } = await _supabase.from('grades').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadGradesLog();
+    }
+};
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session } } = await _supabase.auth.getSession();
     if (session) {
-        const localData = students.find(s => s.email === session.user.email) || { name: session.user.email };
+        const email = session.user.email;
+        const localData = students.find(s => s.email === email) || { name: email };
         loginUser({ ...session.user, ...localData });
     }
 });
