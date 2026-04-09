@@ -182,6 +182,14 @@ function updateStudentStats() {
 // Очистка CSS конфликтов через JS при загрузке (форсированно)
 document.addEventListener('DOMContentLoaded', () => {
     // #region agent log
+    const loginBtn = document.querySelector('#login-form .auth-btn');
+    const regBtn = document.querySelector('#register-form .auth-btn');
+    const loginBtnStyle = loginBtn ? getComputedStyle(loginBtn) : null;
+    const regBtnStyle = regBtn ? getComputedStyle(regBtn) : null;
+    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f1c269'},body:JSON.stringify({sessionId:'f1c269',runId:'pre-fix',hypothesisId:'H6',location:'lll.js:ui-snapshot',message:'auth buttons and supabase runtime snapshot',data:{hasCreateClient:typeof createClient === 'function',hasSupabaseGlobal:typeof supabase !== 'undefined',hasSupabaseClient:Boolean(_supabase),origin:window.location.origin,path:window.location.pathname,loginBtnExists:Boolean(loginBtn),regBtnExists:Boolean(regBtn),loginBtnDisplay:loginBtnStyle ? loginBtnStyle.display : 'missing',loginBtnWidth:loginBtnStyle ? loginBtnStyle.width : 'missing',regBtnDisplay:regBtnStyle ? regBtnStyle.display : 'missing',regBtnWidth:regBtnStyle ? regBtnStyle.width : 'missing'},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+
+    // #region agent log
     fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f1c269'},body:JSON.stringify({sessionId:'f1c269',runId:'pre-fix',hypothesisId:'H4',location:'lll.js:DOMContentLoaded',message:'dom loaded and handlers snapshot',data:{switchAuthFormType:typeof window.switchAuthForm,regType:typeof window.reg,logoutType:typeof window.logout,saveSettingsType:typeof window.saveSettings,deleteGradeType:typeof window.deleteGrade,deleteAbsenceType:typeof window.deleteAbsence},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
     // Проверка сессии
