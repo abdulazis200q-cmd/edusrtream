@@ -9,10 +9,10 @@ let attendanceData = []; // Имитация базы пропусков
 
 // #region agent log
 window.addEventListener('error', (event) => {
-    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f1c269'},body:JSON.stringify({sessionId:'f1c269',runId:'pre-fix',hypothesisId:'H1',location:'lll.js:error-listener',message:'window.error captured',data:{message:event.message,source:event.filename,line:event.lineno,column:event.colno},timestamp:Date.now()})}).catch(()=>{});
+    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H1',location:'lll.js:error-listener',message:'window.error captured',data:{message:event.message,source:event.filename,line:event.lineno,column:event.colno},timestamp:Date.now()})}).catch(()=>{});
 });
 window.addEventListener('unhandledrejection', (event) => {
-    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f1c269'},body:JSON.stringify({sessionId:'f1c269',runId:'pre-fix',hypothesisId:'H2',location:'lll.js:unhandledrejection-listener',message:'unhandled rejection captured',data:{reason:String(event.reason)},timestamp:Date.now()})}).catch(()=>{});
+    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H2',location:'lll.js:unhandledrejection-listener',message:'unhandled rejection captured',data:{reason:String(event.reason)},timestamp:Date.now()})}).catch(()=>{});
 });
 // #endregion
 
@@ -22,7 +22,7 @@ window.login = async function() {
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
     // #region agent log
-    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f1c269'},body:JSON.stringify({sessionId:'f1c269',runId:'pre-fix',hypothesisId:'H3',location:'lll.js:login-entry',message:'login invoked',data:{hasEmail:Boolean(email),passwordLength:password.length,studentsDefined:typeof students !== 'undefined'},timestamp:Date.now()})}).catch(()=>{});
+    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H3',location:'lll.js:login-entry',message:'login invoked',data:{hasEmail:Boolean(email),passwordLength:password.length,studentsDefined:typeof students !== 'undefined'},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
 
     if (!email || !password) return alert('Введите данные');
@@ -45,9 +45,15 @@ window.login = async function() {
 };
 
 function loginUser(user) {
+    // #region agent log
+    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H4',location:'lll.js:loginUser-entry',message:'loginUser called',data:{hasUser:Boolean(user),role:user?.role ?? null,name:user?.name ?? null},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     currentUser = user;
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
+    // #region agent log
+    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H4',location:'lll.js:loginUser-visibility',message:'visibility switched after loginUser',data:{authDisplay:document.getElementById('auth-screen').style.display,appDisplay:document.getElementById('app-container').style.display},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     
     document.getElementById('user-name').innerText = user.name;
     document.getElementById('user-avatar').innerText = user.name[0].toUpperCase();
@@ -182,13 +188,26 @@ function updateStudentStats() {
 // Очистка CSS конфликтов через JS при загрузке (форсированно)
 document.addEventListener('DOMContentLoaded', () => {
     // #region agent log
-    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f1c269'},body:JSON.stringify({sessionId:'f1c269',runId:'pre-fix',hypothesisId:'H4',location:'lll.js:DOMContentLoaded',message:'dom loaded and handlers snapshot',data:{switchAuthFormType:typeof window.switchAuthForm,regType:typeof window.reg,logoutType:typeof window.logout,saveSettingsType:typeof window.saveSettings,deleteGradeType:typeof window.deleteGrade,deleteAbsenceType:typeof window.deleteAbsence},timestamp:Date.now()})}).catch(()=>{});
+    fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H5',location:'lll.js:DOMContentLoaded',message:'dom loaded and handlers snapshot',data:{switchAuthFormType:typeof window.switchAuthForm,regType:typeof window.reg,logoutType:typeof window.logout,saveSettingsType:typeof window.saveSettings,deleteGradeType:typeof window.deleteGrade,deleteAbsenceType:typeof window.deleteAbsence},timestamp:Date.now()})}).catch(()=>{});
     // #endregion
     // Проверка сессии
+    // #region agent log
+    const footerRegisterBtn = document.querySelector('#login-form .auth-footer button');
+    if (footerRegisterBtn) {
+        const footerBtnStyles = window.getComputedStyle(footerRegisterBtn);
+        fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H6',location:'lll.js:footer-register-style',message:'footer register button computed style',data:{display:footerBtnStyles.display,backgroundColor:footerBtnStyles.backgroundColor,borderStyle:footerBtnStyles.borderStyle,color:footerBtnStyles.color,padding:footerBtnStyles.padding,textDecoration:footerBtnStyles.textDecorationLine},timestamp:Date.now()})}).catch(()=>{});
+    }
+    const registerSubmitBtn = document.querySelector('#register-form .auth-btn');
+    if (registerSubmitBtn) {
+        const submitBtnStyles = window.getComputedStyle(registerSubmitBtn);
+        fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H7',location:'lll.js:submit-register-style',message:'register submit button computed style',data:{display:submitBtnStyles.display,backgroundImage:submitBtnStyles.backgroundImage,borderRadius:submitBtnStyles.borderRadius,color:submitBtnStyles.color,justifyContent:submitBtnStyles.justifyContent},timestamp:Date.now()})}).catch(()=>{});
+    }
+    // #endregion
+
     const checkSession = async () => {
         const { data: { session } } = await _supabase.auth.getSession();
         // #region agent log
-        fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f1c269'},body:JSON.stringify({sessionId:'f1c269',runId:'pre-fix',hypothesisId:'H5',location:'lll.js:checkSession',message:'session check result',data:{hasSession:Boolean(session),studentsDefined:typeof students !== 'undefined'},timestamp:Date.now()})}).catch(()=>{});
+        fetch('http://127.0.0.1:7444/ingest/67680786-3026-4760-a91b-dc4bc79d9ddc',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'150520'},body:JSON.stringify({sessionId:'150520',runId:'pre-fix',hypothesisId:'H1',location:'lll.js:checkSession',message:'session check result',data:{hasSession:Boolean(session),studentsDefined:typeof students !== 'undefined'},timestamp:Date.now()})}).catch(()=>{});
         // #endregion
         if (session) {
             const info = students.find(s => s.email === session.user.email) || { name: session.user.email, role: 'student' };
